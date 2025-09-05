@@ -1,14 +1,12 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Home from "./pages/Home"; // combined Login + Signup page
+import Home from "./pages/Home"; 
 
 function App() {
   return (
     <Router>
       <Routes>
-        {/* Default route shows Home page */}
         <Route path="/" element={<Home />} />
 
-        {/* Catch-all for unmatched paths */}
         <Route
           path="*"
           element={
