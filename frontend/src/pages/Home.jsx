@@ -1,6 +1,6 @@
 import { useState } from "react";
 import axios from "axios";
-import blackDunes from "../assets/images/black-dunes.jpeg";
+import blackDunes from "../assets/images/black-dunes.webp";
 
 function Home() {
   const [isLogin, setIsLogin] = useState(true);
