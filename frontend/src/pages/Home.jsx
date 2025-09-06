@@ -1,8 +1,11 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom"; // ✅ import useNavigate
 import axios from "axios";
 import blackDunes from "../assets/images/black-dunes.webp";
 
 function Home() {
+  const navigate = useNavigate(); // ✅ initialize navigate
+
   const [isLogin, setIsLogin] = useState(true);
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
@@ -23,6 +26,9 @@ function Home() {
       );
       localStorage.setItem("token", res.data.token);
       setMessage("Login successful!");
+
+      // ✅ redirect to dashboard
+      navigate("/dashboard");
     } catch (err) {
       setError("Invalid login credentials.");
     }
@@ -42,7 +48,6 @@ function Home() {
       setSignupEmail("");
       setSignupPassword("");
       setIsLogin(true);
-    // eslint-disable-next-line no-unused-vars
     } catch (err) {
       setError("Signup failed. Try again.");
     }
@@ -62,7 +67,7 @@ function Home() {
       <div className="absolute inset-0 bg-black/30 z-0"></div>
 
       {/* Content */}
-      <div className="relative z-10 w-full max-w-sm"> 
+      <div className="relative z-10 w-full max-w-sm">
         {/* Blog Name */}
         <header className="text-center mb-10">
           <h1 className="text-4xl font-bold text-white mb-2">SkyPosts</h1>
@@ -70,7 +75,7 @@ function Home() {
         </header>
 
         {/* Login/Signup Card */}
-        <div className="bg-white p-8 rounded-2xl shadow-lg"> 
+        <div className="bg-white p-8 rounded-2xl shadow-lg">
           <h2 className="text-2xl font-semibold text-gray-800 text-center mb-6">
             {isLogin ? "Login" : "Signup"}
           </h2>
