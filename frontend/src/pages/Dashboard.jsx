@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import PostForm from "../components/PostForm";
 
 function Dashboard() {
   const navigate = useNavigate();
-  const [user, setUser] = useState(""); // User name
+  const [user, setUser] = useState(""); 
   const [posts, setPosts] = useState([]);
+  const [loadingPosts, setLoadingPosts] = useState(true);
 
   // Check login and fetch posts
   useEffect(() => {
@@ -13,17 +15,19 @@ function Dashboard() {
     if (!token) {
       navigate("/");
     } else {
-      setUser("John Doe");
+      setUser("John Doe"); // replace with real user from backend
 
       const fetchPosts = async () => {
         try {
           const res = await axios.get(
-            "https://your-api-endpoint.com/posts",
+            "https://g6ihp05rd9.execute-api.ca-central-1.amazonaws.com/posts",
             { headers: { Authorization: `Bearer ${token}` } }
           );
           setPosts(res.data);
         } catch (err) {
           console.log("Error fetching posts:", err);
+        } finally {
+          setLoadingPosts(false);
         }
       };
       fetchPosts();
@@ -33,6 +37,11 @@ function Dashboard() {
   const handleLogout = () => {
     localStorage.removeItem("token");
     navigate("/");
+  };
+
+  // Callback when a new post is created
+  const handlePostCreated = (newPost) => {
+    setPosts([newPost, ...posts]); // prepend the new post
   };
 
   return (
@@ -48,26 +57,24 @@ function Dashboard() {
         </button>
       </header>
 
-      {/* Create Post Card */}
-      <div className="bg-white p-6 rounded-xl shadow-md mb-8 max-w-xl">
-        <h2 className="text-xl font-semibold mb-4">Create a New Post</h2>
-        <button
-          onClick={() => alert("Open create post modal/page")}
-          className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
-        >
-          New Post
-        </button>
-      </div>
+      {/* Create Post Form */}
+      <PostForm onPostCreated={handlePostCreated} />
 
       {/* Posts List */}
-      <div className="space-y-4 max-w-2xl">
-        {posts.length === 0 ? (
+      <div className="space-y-4 max-w-2xl mt-8">
+        {loadingPosts ? (
+          <p>Loading posts...</p>
+        ) : posts.length === 0 ? (
           <p className="text-gray-500">No posts yet. Start sharing your thoughts!</p>
         ) : (
           posts.map((post) => (
-            <div key={post.id} className="bg-white p-4 rounded-xl shadow-sm">
+            <div
+              key={post.postId}
+              className="bg-white p-4 rounded-xl shadow-sm cursor-pointer hover:bg-gray-100 transition-colors"
+              onClick={() => navigate(`/posts/${post.postId}`)}
+            >
               <h3 className="font-semibold text-gray-800">{post.title}</h3>
-              <p className="text-gray-600 mt-1">{post.content}</p>
+              <p className="text-gray-600 mt-1">{post.content.substring(0, 100)}...</p>
             </div>
           ))
         )}

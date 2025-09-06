@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
+import PostDetails from "./pages/PostDetails";
 import ProtectedRoute from "./components/ProtectedRoutes"; 
 
 function App() {
@@ -14,6 +15,15 @@ function App() {
           element={
             <ProtectedRoute>
               <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/posts/:postId"
+          element={
+            <ProtectedRoute>
+              <PostDetails />
             </ProtectedRoute>
           }
         />
