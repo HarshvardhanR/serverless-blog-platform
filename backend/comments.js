@@ -21,3 +21,65 @@ export const createComment = async (event) => {
     return { statusCode: 401, body: JSON.stringify({ error: err.message }) };
   }
 };
+
+export const getComments = async (event) => {
+  try {
+    const result = await dynamo.scan({ TableName: COMMENT_TABLE }).promise();
+    return {
+      statusCode: 200,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(result.Items),
+    };
+  } catch (err) {
+    console.error("Error fetching comments:", err);
+    return { statusCode: 500, body: JSON.stringify({ error: "Failed to fetch comments" }) };
+  }
+};
+
+import { requireAuth } from "./utils/requireAuth.js";
+
+export const getUserComments = async (event) => {
+  try {
+    const userId = requireAuth(event); // get logged-in user
+    const params = {
+      TableName: COMMENT_TABLE,
+      IndexName: "userCommentsIndex",
+      KeyConditionExpression: "userId = :uid",
+      ExpressionAttributeValues: {
+        ":uid": userId,
+      },
+    };
+    const result = await dynamo.query(params).promise();
+    return {
+      statusCode: 200,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(result.Items),
+    };
+  } catch (err) {
+    console.error("Error fetching user comments:", err);
+    return { statusCode: 401, body: JSON.stringify({ error: err.message }) };
+  }
+};
+
+export const getPostComments = async (event) => {
+  try {
+    const postId = event.pathParameters.postId;
+    const params = {
+      TableName: COMMENT_TABLE,
+      IndexName: "postCommentsIndex",
+      KeyConditionExpression: "postId = :pid",
+      ExpressionAttributeValues: {
+        ":pid": postId,
+      },
+    };
+    const result = await dynamo.query(params).promise();
+    return {
+      statusCode: 200,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(result.Items),
+    };
+  } catch (err) {
+    console.error("Error fetching post comments:", err);
+    return { statusCode: 500, body: JSON.stringify({ error: "Failed to fetch comments" }) };
+  }
+};

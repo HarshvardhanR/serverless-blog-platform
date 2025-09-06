@@ -20,3 +20,43 @@ export const createPost = async (event) => {
     return { statusCode: 401, body: JSON.stringify({ error: err.message }) };
   }
 };
+
+// Get all posts (public feed)
+export const getPosts = async (event) => {
+  try {
+    const result = await dynamo.scan({ TableName: POST_TABLE }).promise();
+    return {
+      statusCode: 200,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(result.Items),
+    };
+  } catch (err) {
+    console.error("Error fetching posts:", err);
+    return { statusCode: 500, body: JSON.stringify({ error: "Failed to fetch posts" }) };
+  }
+};
+
+// Get posts by logged-in user (using GSI)
+export const getUserPosts = async (event) => {
+  try {
+    const userId = requireAuth(event); // get user from JWT
+    const params = {
+      TableName: POST_TABLE,
+      IndexName: "authorPostsIndex", // your GSI
+      KeyConditionExpression: "userId = :uid",
+      ExpressionAttributeValues: {
+        ":uid": userId,
+      },
+    };
+    const result = await dynamo.query(params).promise();
+    return {
+      statusCode: 200,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(result.Items),
+    };
+  } catch (err) {
+    console.error("Error fetching user posts:", err);
+    return { statusCode: 401, body: JSON.stringify({ error: err.message }) };
+  }
+};
+

@@ -9,6 +9,20 @@ provider:
     POST_TABLE: ${env:POST_TABLE}
     COMMENT_TABLE: ${env:COMMENT_TABLE}
     JWT_SECRET: ${env:JWT_SECRET}
+  httpApi:
+    cors:
+      allowedOrigins:
+        - '*'
+      allowedHeaders:
+        - Content-Type
+        - Authorization
+      allowedMethods:
+        - OPTIONS
+        - GET
+        - POST
+        - PUT
+        - DELETE
+
   iam:
     role:
       statements:
@@ -56,6 +70,41 @@ functions:
       - httpApi:
           path: /comments
           method: post
+
+  getPosts:
+    handler: posts.getPosts
+    events:
+      - httpApi:
+          path: /posts
+          method: get
+
+  getUserPosts:
+    handler: posts.getUserPosts
+    events:
+      - httpApi:
+          path: /posts/me
+          method: get
+
+  getComments:
+    handler: comments.getComments
+    events:
+      - httpApi:
+          path: /comments
+          method: get
+
+  getUserComments:
+    handler: comments.getUserComments
+    events:
+      - httpApi:
+          path: /comments/me
+          method: get
+
+  getPostComments:
+    handler: comments.getPostComments
+    events:
+      - httpApi:
+          path: /comments/post/{postId}
+          method: get
 
 plugins:
   - serverless-dotenv-plugin
