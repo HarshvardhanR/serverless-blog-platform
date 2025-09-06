@@ -5,11 +5,13 @@ import axios from "axios";
 function PostDetails() {
   const { postId } = useParams(); // get postId from URL
   const navigate = useNavigate();
+
   const [post, setPost] = useState(null);
   const [comments, setComments] = useState([]);
   const [commentText, setCommentText] = useState("");
   const [loading, setLoading] = useState(true);
   const [postingComment, setPostingComment] = useState(false);
+  const [error, setError] = useState(null);
 
   const token = localStorage.getItem("token");
 
@@ -21,21 +23,25 @@ function PostDetails() {
 
     const fetchPostAndComments = async () => {
       try {
-        // Fetch post details
-        const postRes = await axios.get(
-          `https://your-api-endpoint.com/posts/${postId}`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        setPost(postRes.data);
+        setLoading(true);
+        setError(null);
 
-        // Fetch comments for this post
-        const commentsRes = await axios.get(
-          `https://your-api-endpoint.com/comments?postId=${postId}`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        const [postRes, commentsRes] = await Promise.all([
+          axios.get(
+            `https://g6ihp05rd9.execute-api.ca-central-1.amazonaws.com/posts/${postId}`,
+            { headers: { Authorization: `Bearer ${token}` } }
+          ),
+          axios.get(
+            `https://g6ihp05rd9.execute-api.ca-central-1.amazonaws.com/comments/post/${postId}`,
+            { headers: { Authorization: `Bearer ${token}` } }
+          ),
+        ]);
+
+        setPost(postRes.data);
         setComments(commentsRes.data);
       } catch (err) {
         console.error("Error fetching post or comments:", err);
+        setError("Failed to load post or comments.");
       } finally {
         setLoading(false);
       }
@@ -51,7 +57,7 @@ function PostDetails() {
 
     try {
       const res = await axios.post(
-        `https://your-api-endpoint.com/comments`,
+        "https://g6ihp05rd9.execute-api.ca-central-1.amazonaws.com/comments",
         { postId, content: commentText },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -59,12 +65,14 @@ function PostDetails() {
       setCommentText("");
     } catch (err) {
       console.error("Error posting comment:", err);
+      setError("Failed to post comment.");
     } finally {
       setPostingComment(false);
     }
   };
 
   if (loading) return <p className="text-center mt-10">Loading...</p>;
+  if (error) return <p className="text-center mt-10 text-red-500">{error}</p>;
   if (!post) return <p className="text-center mt-10">Post not found.</p>;
 
   return (
