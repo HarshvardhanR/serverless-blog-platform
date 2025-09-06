@@ -9,10 +9,11 @@ provider:
     POST_TABLE: ${env:POST_TABLE}
     COMMENT_TABLE: ${env:COMMENT_TABLE}
     JWT_SECRET: ${env:JWT_SECRET}
+
   httpApi:
     cors:
       allowedOrigins:
-        - '*'
+        - '*'       # allow all origins for dev; change to your frontend in prod
       allowedHeaders:
         - Content-Type
         - Authorization
@@ -22,6 +23,7 @@ provider:
         - POST
         - PUT
         - DELETE
+      allowCredentials: false   # optional, only needed if you use cookies/auth
 
   iam:
     role:
@@ -105,6 +107,14 @@ functions:
       - httpApi:
           path: /comments/post/{postId}
           method: get
+
+  getPostById:
+    handler: posts.getPostById
+    events:
+      - httpApi:
+          path: /posts/{postId}
+          method: get
+
 
 plugins:
   - serverless-dotenv-plugin
