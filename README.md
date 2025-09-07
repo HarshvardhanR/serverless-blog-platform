@@ -157,14 +157,6 @@ npm start
 * Users, Posts and comments stored in **DynamoDB**.
 * Images stored in **S3**, accessed via **signed URLs**.
 
-## Notes / Tips
-
-* Ensure **CORS** is properly configured in AWS API Gateway.
-* All protected endpoints require a valid **JWT token**.
-* S3 signed URLs expire after 5 minutes — handle expired URLs gracefully.
-* Use browser dev tools to debug image URLs if they don’t appear.
-
----
 
 ## License
 
