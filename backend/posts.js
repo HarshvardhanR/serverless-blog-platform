@@ -117,11 +117,14 @@ export const getUserPosts = async (event) => {
 
 
 export const getPostById = async (event) => {
-  const optionsResponse = handleOptions(event);
-  if (optionsResponse) return optionsResponse;
+  // Handle CORS preflight
+  if (event.httpMethod === "OPTIONS") {
+    return { statusCode: 200, headers: corsHeaders, body: "" };
+  }
 
   try {
     const postId = event.pathParameters?.postId;
+
     if (!postId) {
       return {
         statusCode: 400,
@@ -130,7 +133,10 @@ export const getPostById = async (event) => {
       };
     }
 
-    const result = await dynamo.get({ TableName: POST_TABLE, Key: { postId } }).promise();
+    // Get the post from DynamoDB
+    const result = await dynamo
+      .get({ TableName: POST_TABLE, Key: { postId } })
+      .promise();
 
     if (!result.Item) {
       return {
@@ -142,17 +148,13 @@ export const getPostById = async (event) => {
 
     const post = result.Item;
 
+  
     if (post.imageUrl) {
-      const urlParts = post.imageUrl.split(`${POST_IMAGES_BUCKET}.s3.${REGION}.amazonaws.com/`);
-      const key = urlParts[1];
-
-      const signedUrl = s3.getSignedUrl("getObject", {
+      post.imageUrl = s3.getSignedUrl("getObject", {
         Bucket: POST_IMAGES_BUCKET,
-        Key: key,
+        Key: post.imageUrl, 
         Expires: 300, 
       });
-
-      post.imageUrl = signedUrl;
     }
 
     return {
