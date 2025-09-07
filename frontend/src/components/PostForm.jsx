@@ -4,28 +4,49 @@ import axios from "axios";
 function PostForm({ onPostCreated }) {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [imageFile, setImageFile] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  const token = localStorage.getItem("token");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const response = await axios.post(
+      let imageUrl = null;
+
+      if (imageFile) {
+        const uploadRes = await axios.post(
+          "https://g6ihp05rd9.execute-api.ca-central-1.amazonaws.com/posts/upload-url",
+          { fileName: imageFile.name, fileType: imageFile.type },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+
+        const { uploadUrl, imageUrl: s3Key } = uploadRes.data;
+
+        // Upload to S3
+        await axios.put(uploadUrl, imageFile, {
+          headers: { "Content-Type": imageFile.type },
+        });
+
+        imageUrl = s3Key; 
+      }
+
+      const postRes = await axios.post(
         "https://g6ihp05rd9.execute-api.ca-central-1.amazonaws.com/posts",
-        { title, content },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
+        { title, content, imageUrl },
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
       setTitle("");
       setContent("");
-      onPostCreated(response.data); // update Dashboard posts
+      setImageFile(null);
+
+      onPostCreated(postRes.data); 
     } catch (err) {
       console.error("Error creating post:", err);
+      alert("Failed to create post. Check console for details.");
     } finally {
       setLoading(false);
     }
@@ -37,6 +58,7 @@ function PostForm({ onPostCreated }) {
       className="bg-white p-6 rounded-2xl shadow-lg w-full max-w-lg mx-auto"
     >
       <h2 className="text-xl font-bold mb-4">Create a Post</h2>
+
       <input
         type="text"
         placeholder="Title"
@@ -45,6 +67,7 @@ function PostForm({ onPostCreated }) {
         className="w-full p-2 border rounded-lg mb-4"
         required
       />
+
       <textarea
         placeholder="Write your content..."
         value={content}
@@ -53,6 +76,14 @@ function PostForm({ onPostCreated }) {
         rows={4}
         required
       />
+
+      <input
+        type="file"
+        accept="image/*"
+        onChange={(e) => setImageFile(e.target.files[0])}
+        className="mb-4"
+      />
+
       <button
         type="submit"
         disabled={loading}

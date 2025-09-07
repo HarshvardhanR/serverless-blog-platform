@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 
 function PostDetails() {
-  const { postId } = useParams(); // get postId from URL
+  const { postId } = useParams();
   const navigate = useNavigate();
 
   const [post, setPost] = useState(null);
@@ -15,40 +15,45 @@ function PostDetails() {
 
   const token = localStorage.getItem("token");
 
-  useEffect(() => {
-    if (!token) {
-      navigate("/");
-      return;
-    }
+useEffect(() => {
+  if (!token) {
+    navigate("/");
+    return;
+  }
 
-    const fetchPostAndComments = async () => {
-      try {
-        setLoading(true);
-        setError(null);
+  const fetchPostAndComments = async () => {
+    try {
+      setLoading(true);
+      setError(null);
 
-        const [postRes, commentsRes] = await Promise.all([
-          axios.get(
-            `https://g6ihp05rd9.execute-api.ca-central-1.amazonaws.com/posts/${postId}`,
-            { headers: { Authorization: `Bearer ${token}` } }
-          ),
-          axios.get(
-            `https://g6ihp05rd9.execute-api.ca-central-1.amazonaws.com/comments/post/${postId}`,
-            { headers: { Authorization: `Bearer ${token}` } }
-          ),
-        ]);
+      const [postRes, commentsRes] = await Promise.all([
+        axios.get(
+          `https://g6ihp05rd9.execute-api.ca-central-1.amazonaws.com/posts/${postId}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        ),
+        axios.get(
+          `https://g6ihp05rd9.execute-api.ca-central-1.amazonaws.com/comments/post/${postId}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        ),
+      ]);
 
-        setPost(postRes.data);
-        setComments(commentsRes.data);
-      } catch (err) {
-        console.error("Error fetching post or comments:", err);
-        setError("Failed to load post or comments.");
-      } finally {
-        setLoading(false);
+      console.log("Post fetched:", postRes.data); 
+      if (postRes.data.imageUrl) {
+        console.log("Image URL:", postRes.data.imageUrl); 
       }
-    };
 
-    fetchPostAndComments();
-  }, [postId, navigate, token]);
+      setPost(postRes.data);
+      setComments(commentsRes.data);
+    } catch (err) {
+      console.error("Error fetching post or comments:", err);
+      setError("Failed to load post or comments.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchPostAndComments();
+}, [postId, navigate, token]);
 
   const handleCommentSubmit = async (e) => {
     e.preventDefault();
@@ -77,7 +82,6 @@ function PostDetails() {
 
   return (
     <div className="min-h-screen bg-gray-50 p-6 max-w-3xl mx-auto">
-      {/* Back Button */}
       <button
         onClick={() => navigate("/dashboard")}
         className="mb-4 px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300"
@@ -85,20 +89,27 @@ function PostDetails() {
         &larr; Back
       </button>
 
-      {/* Post */}
       <div className="bg-white p-6 rounded-xl shadow-md mb-8">
         <h1 className="text-2xl font-bold mb-2">{post.title}</h1>
+
+        
+        {post.imageUrl && (
+          <img
+            src={post.imageUrl}
+            alt="Post"
+            className="w-full max-h-96 object-cover mb-4 rounded-lg"
+          />
+        )}
+
         <p className="text-gray-700">{post.content}</p>
         <p className="text-gray-400 text-sm mt-2">
           Posted at: {new Date(post.createdAt).toLocaleString()}
         </p>
       </div>
 
-      {/* Comments */}
       <div className="bg-white p-6 rounded-xl shadow-md">
         <h2 className="text-xl font-semibold mb-4">Comments</h2>
 
-        {/* Comment Form */}
         <form onSubmit={handleCommentSubmit} className="mb-6">
           <textarea
             placeholder="Write a comment..."
@@ -117,7 +128,6 @@ function PostDetails() {
           </button>
         </form>
 
-        {/* Comments List */}
         {comments.length === 0 ? (
           <p className="text-gray-500">No comments yet.</p>
         ) : (

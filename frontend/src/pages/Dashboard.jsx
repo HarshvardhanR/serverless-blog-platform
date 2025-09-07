@@ -9,13 +9,13 @@ function Dashboard() {
   const [posts, setPosts] = useState([]);
   const [loadingPosts, setLoadingPosts] = useState(true);
 
-  // Check login and fetch posts
+
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
       navigate("/");
     } else {
-      setUser("John Doe"); // replace with real user from backend
+      setUser("John Doe");
 
       const fetchPosts = async () => {
         try {
@@ -39,14 +39,13 @@ function Dashboard() {
     navigate("/");
   };
 
-  // Callback when a new post is created
+  
   const handlePostCreated = (newPost) => {
-    setPosts([newPost, ...posts]); // prepend the new post
+    setPosts([newPost, ...posts]); 
   };
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
-      {/* Header */}
       <header className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold text-gray-800">Welcome, {user}!</h1>
         <button
@@ -57,10 +56,9 @@ function Dashboard() {
         </button>
       </header>
 
-      {/* Create Post Form */}
       <PostForm onPostCreated={handlePostCreated} />
 
-      {/* Posts List */}
+
       <div className="space-y-4 max-w-2xl mt-8">
         {loadingPosts ? (
           <p>Loading posts...</p>

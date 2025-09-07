@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom"; // ✅ import useNavigate
+import { useNavigate } from "react-router-dom"; 
 import axios from "axios";
 import blackDunes from "../assets/images/black-dunes.webp";
 
 function Home() {
-  const navigate = useNavigate(); // ✅ initialize navigate
+  const navigate = useNavigate(); 
 
   const [isLogin, setIsLogin] = useState(true);
   const [loginEmail, setLoginEmail] = useState("");
@@ -27,8 +27,8 @@ function Home() {
       localStorage.setItem("token", res.data.token);
       setMessage("Login successful!");
 
-      // ✅ redirect to dashboard
       navigate("/dashboard");
+    // eslint-disable-next-line no-unused-vars
     } catch (err) {
       setError("Invalid login credentials.");
     }
@@ -48,6 +48,7 @@ function Home() {
       setSignupEmail("");
       setSignupPassword("");
       setIsLogin(true);
+    // eslint-disable-next-line no-unused-vars
     } catch (err) {
       setError("Signup failed. Try again.");
     }
