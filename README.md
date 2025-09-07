@@ -158,12 +158,6 @@ npm start
 * Images stored in **S3**, accessed via **signed URLs**.
 
 
-## License
-
-MIT License
-
----
-
 ## Author
 
 **Harshvardhansingh Rao**
