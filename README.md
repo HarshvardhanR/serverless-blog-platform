@@ -168,5 +168,5 @@ MIT License
 
 **Harshvardhansingh Rao**
 
-* GitHub: [github.com/yourusername](https://github.com/HarshvardhanR)
-* LinkedIn: [linkedin.com/in/yourprofile](https://www.linkedin.com/in/harshvardhansingh-rao-a63929222/)
+* GitHub: [github.com/HarshvardhanR](https://github.com/HarshvardhanR)
+* LinkedIn: [linkedin.com/in/harshvardhansingh-rao](https://www.linkedin.com/in/harshvardhansingh-rao-a63929222/)
