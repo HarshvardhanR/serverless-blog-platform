@@ -43,11 +43,12 @@ The platform uses JWT-based authentication and supports image uploads via signed
 serverless-blog/
 ├─ frontend/
 │  ├─ src/
-│  │  ├─ components/       # React components (PostForm, PostDetails, etc.)
+│  │  ├─ components/       # React components (PostForm, etc.)
 │  │  ├─ pages/            # Pages like Dashboard, PostDetails
 │  │  └─ App.js
 ├─ backend/
-│  ├─ posts.js              # CRUD operations for posts
+│  ├─ auth.js               # for authentication
+|  ├─ posts.js              # CRUD operations for posts
 │  ├─ comments.js           # CRUD operations for comments
 │  ├─ utils/                # Helper functions like requireAuth.js
 │  └─ serverless.yml        # Serverless Framework config (optional)
@@ -80,8 +81,10 @@ npm install aws-sdk uuid
 
 ```env
 POST_TABLE=YourDynamoDBTableName
+COMMENT_TABLE=YourDynamoDBTableName
+USER_TABLE=YourDynamoDBTableName
 POST_IMAGES_BUCKET=YourS3BucketName
-AWS_REGION=ca-central-1
+JWT_SECRET=YourSuperSecretKey
 ```
 
 3. Deploy Lambda functions to AWS:
@@ -147,26 +150,12 @@ npm start
 4. Click on a post to view details and comments.
 5. Add comments in real-time.
 
----
-
-## Screenshots
-
-![Dashboard](screenshots/dashboard.png)
-![Post Details](screenshots/post-details.png)
-![Image Upload](screenshots/upload.png)
-
-> *Tip: Capture screenshots of your running frontend and store them in `frontend/screenshots` for reference.*
-
----
 
 ## Deployment
 
 * Backend deployed using **AWS Lambda** and **API Gateway**.
-* Posts and comments stored in **DynamoDB**.
+* Users, Posts and comments stored in **DynamoDB**.
 * Images stored in **S3**, accessed via **signed URLs**.
-* Frontend hosted locally or via **Netlify / Vercel**.
-
----
 
 ## Notes / Tips
 
@@ -187,15 +176,5 @@ MIT License
 
 **Harshvardhansingh Rao**
 
-* GitHub: [github.com/yourusername](https://github.com/yourusername)
-* LinkedIn: [linkedin.com/in/yourprofile](https://linkedin.com/in/yourprofile)
-
----
-
-## Future Enhancements
-
-* Add **like/dislike** functionality for posts.
-* Pagination for posts and comments.
-* Real-time updates with **WebSockets** or **AWS AppSync**.
-* User profile pages with post history.
-* Notifications for new comments on user posts.
+* GitHub: [github.com/yourusername](https://github.com/HarshvardhanR)
+* LinkedIn: [linkedin.com/in/yourprofile](https://www.linkedin.com/in/harshvardhansingh-rao-a63929222/)
