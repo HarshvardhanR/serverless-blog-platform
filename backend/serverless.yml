@@ -9,11 +9,12 @@ provider:
     POST_TABLE: ${env:POST_TABLE}
     COMMENT_TABLE: ${env:COMMENT_TABLE}
     JWT_SECRET: ${env:JWT_SECRET}
+    POST_IMAGES_BUCKET: ${self:custom.postImagesBucket}
 
   httpApi:
     cors:
       allowedOrigins:
-        - '*'       # allow all origins for dev; change to your frontend in prod
+        - '*'
       allowedHeaders:
         - Content-Type
         - Authorization
@@ -23,7 +24,7 @@ provider:
         - POST
         - PUT
         - DELETE
-      allowCredentials: false   # optional, only needed if you use cookies/auth
+      allowCredentials: false
 
   iam:
     role:
@@ -43,6 +44,18 @@ provider:
             - arn:aws:dynamodb:ca-central-1:*:table/${env:USER_TABLE}/index/*
             - arn:aws:dynamodb:ca-central-1:*:table/${env:POST_TABLE}/index/*
             - arn:aws:dynamodb:ca-central-1:*:table/${env:COMMENT_TABLE}/index/*
+        
+        - Effect: Allow
+          Action:
+            - s3:PutObject
+            - s3:GetObject
+          Resource:
+            - arn:aws:s3:::${self:custom.postImagesBucket}/*
+        - Effect: Allow
+          Action:
+            - s3:ListBucket
+          Resource:
+            - arn:aws:s3:::${self:custom.postImagesBucket}
 
 functions:
   register:
@@ -115,6 +128,34 @@ functions:
           path: /posts/{postId}
           method: get
 
+  getUploadUrl:
+    handler: posts.getUploadUrl
+    events:
+      - httpApi:
+          path: /posts/upload-url
+          method: post
+
+resources:
+  Resources:
+    PostImagesBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:custom.postImagesBucket}
+        AccessControl: Private
+        VersioningConfiguration:
+          Status: Enabled
+        CorsConfiguration:
+          CorsRules:
+            - AllowedOrigins:
+                - '*' 
+              AllowedHeaders:
+                - '*'
+              AllowedMethods:
+                - GET
+                - PUT
+                - POST
+                - DELETE
+              MaxAge: 3000
 
 plugins:
   - serverless-dotenv-plugin
@@ -122,3 +163,4 @@ plugins:
 custom:
   dotenv:
     path: .env
+  postImagesBucket: blog-platform-post-images-${sls:stage}

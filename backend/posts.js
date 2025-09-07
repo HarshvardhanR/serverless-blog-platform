@@ -3,42 +3,48 @@ import { v4 as uuidv4 } from "uuid";
 import { requireAuth } from "./utils/requireAuth.js";
 
 const dynamo = new AWS.DynamoDB.DocumentClient();
-const POST_TABLE = process.env.POST_TABLE;
+const s3 = new AWS.S3();
 
-// Helper function to return CORS headers
+const POST_TABLE = process.env.POST_TABLE;
+const POST_IMAGES_BUCKET = process.env.POST_IMAGES_BUCKET;
+const REGION = process.env.AWS_REGION || "ca-central-1";
+
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "Authorization,Content-Type",
   "Access-Control-Allow-Methods": "OPTIONS,GET,POST,PUT,DELETE",
 };
 
-// Handle preflight OPTIONS requests
+
 const handleOptions = (event) => {
   if (event.httpMethod === "OPTIONS") {
-    return {
-      statusCode: 200,
-      headers: corsHeaders,
-      body: "",
-    };
+    return { statusCode: 200, headers: corsHeaders, body: "" };
   }
   return null;
 };
 
-// Create a new post
+
+const getSignedImageUrl = (key) => {
+  if (!key) return null;
+  return s3.getSignedUrl("getObject", {
+    Bucket: POST_IMAGES_BUCKET,
+    Key: key,
+    Expires: 60 * 5, // 5 minutes
+  });
+};
+
+
 export const createPost = async (event) => {
   const optionsResponse = handleOptions(event);
   if (optionsResponse) return optionsResponse;
 
   try {
     const userId = requireAuth(event);
-    const { title, content } = JSON.parse(event.body ?? "{}");
+    const { title, content, imageUrl } = JSON.parse(event.body ?? "{}");
 
     if (!title || !content) {
-      return {
-        statusCode: 400,
-        headers: corsHeaders,
-        body: JSON.stringify({ error: "Missing fields" }),
-      };
+      return { statusCode: 400, headers: corsHeaders, body: JSON.stringify({ error: "Missing title or content" }) };
     }
 
     const postId = uuidv4();
@@ -47,26 +53,20 @@ export const createPost = async (event) => {
       userId,
       title,
       content,
+      imageUrl: imageUrl ?? null, 
       createdAt: new Date().toISOString(),
     };
 
     await dynamo.put({ TableName: POST_TABLE, Item: post }).promise();
 
-    return {
-      statusCode: 201,
-      headers: corsHeaders,
-      body: JSON.stringify(post),
-    };
+    return { statusCode: 201, headers: corsHeaders, body: JSON.stringify(post) };
   } catch (err) {
-    return {
-      statusCode: 401,
-      headers: corsHeaders,
-      body: JSON.stringify({ error: err.message }),
-    };
+    console.error("Error creating post:", err);
+    return { statusCode: 500, headers: corsHeaders, body: JSON.stringify({ error: err.message }) };
   }
 };
 
-// Get all posts (public feed)
+
 export const getPosts = async (event) => {
   const optionsResponse = handleOptions(event);
   if (optionsResponse) return optionsResponse;
@@ -74,22 +74,19 @@ export const getPosts = async (event) => {
   try {
     const result = await dynamo.scan({ TableName: POST_TABLE }).promise();
 
-    return {
-      statusCode: 200,
-      headers: corsHeaders,
-      body: JSON.stringify(result.Items),
-    };
+    const postsWithSignedUrls = result.Items.map(post => ({
+      ...post,
+      imageUrl: getSignedImageUrl(post.imageUrl),
+    }));
+
+    return { statusCode: 200, headers: corsHeaders, body: JSON.stringify(postsWithSignedUrls) };
   } catch (err) {
     console.error("Error fetching posts:", err);
-    return {
-      statusCode: 500,
-      headers: corsHeaders,
-      body: JSON.stringify({ error: "Failed to fetch posts" }),
-    };
+    return { statusCode: 500, headers: corsHeaders, body: JSON.stringify({ error: "Failed to fetch posts" }) };
   }
 };
 
-// Get posts by logged-in user (using GSI)
+
 export const getUserPosts = async (event) => {
   const optionsResponse = handleOptions(event);
   if (optionsResponse) return optionsResponse;
@@ -99,27 +96,25 @@ export const getUserPosts = async (event) => {
 
     const params = {
       TableName: POST_TABLE,
-      IndexName: "authorPostsIndex", // your GSI
+      IndexName: "authorPostsIndex", 
       KeyConditionExpression: "userId = :uid",
       ExpressionAttributeValues: { ":uid": userId },
     };
 
     const result = await dynamo.query(params).promise();
 
-    return {
-      statusCode: 200,
-      headers: corsHeaders,
-      body: JSON.stringify(result.Items),
-    };
+    const postsWithSignedUrls = result.Items.map(post => ({
+      ...post,
+      imageUrl: getSignedImageUrl(post.imageUrl),
+    }));
+
+    return { statusCode: 200, headers: corsHeaders, body: JSON.stringify(postsWithSignedUrls) };
   } catch (err) {
     console.error("Error fetching user posts:", err);
-    return {
-      statusCode: 401,
-      headers: corsHeaders,
-      body: JSON.stringify({ error: err.message }),
-    };
+    return { statusCode: 401, headers: corsHeaders, body: JSON.stringify({ error: err.message }) };
   }
 };
+
 
 export const getPostById = async (event) => {
   const optionsResponse = handleOptions(event);
@@ -128,23 +123,77 @@ export const getPostById = async (event) => {
   try {
     const postId = event.pathParameters?.postId;
     if (!postId) {
-      return { statusCode: 400, headers: corsHeaders, body: JSON.stringify({ error: "Missing postId" }) };
+      return {
+        statusCode: 400,
+        headers: corsHeaders,
+        body: JSON.stringify({ error: "Missing postId" }),
+      };
     }
 
     const result = await dynamo.get({ TableName: POST_TABLE, Key: { postId } }).promise();
 
     if (!result.Item) {
-      return { statusCode: 404, headers: corsHeaders, body: JSON.stringify({ error: "Post not found" }) };
+      return {
+        statusCode: 404,
+        headers: corsHeaders,
+        body: JSON.stringify({ error: "Post not found" }),
+      };
+    }
+
+    const post = result.Item;
+
+    if (post.imageUrl) {
+      const urlParts = post.imageUrl.split(`${POST_IMAGES_BUCKET}.s3.${REGION}.amazonaws.com/`);
+      const key = urlParts[1];
+
+      const signedUrl = s3.getSignedUrl("getObject", {
+        Bucket: POST_IMAGES_BUCKET,
+        Key: key,
+        Expires: 300, 
+      });
+
+      post.imageUrl = signedUrl;
     }
 
     return {
       statusCode: 200,
       headers: corsHeaders,
-      body: JSON.stringify(result.Item),
+      body: JSON.stringify(post),
     };
   } catch (err) {
     console.error("Error fetching post by ID:", err);
-    return { statusCode: 500, headers: corsHeaders, body: JSON.stringify({ error: err.message }) };
+    return {
+      statusCode: 500,
+      headers: corsHeaders,
+      body: JSON.stringify({ error: err.message }),
+    };
   }
 };
 
+
+export const getUploadUrl = async (event) => {
+  if (event.httpMethod === "OPTIONS") return { statusCode: 204, headers: corsHeaders };
+
+  try {
+    const userId = requireAuth(event);
+    const { fileName, fileType } = JSON.parse(event.body ?? "{}");
+
+    if (!fileName || !fileType) {
+      return { statusCode: 400, headers: corsHeaders, body: JSON.stringify({ error: "Missing fileName or fileType" }) };
+    }
+
+    const key = `${userId}/${Date.now()}-${fileName}`;
+
+    const uploadUrl = s3.getSignedUrl("putObject", {
+      Bucket: POST_IMAGES_BUCKET,
+      Key: key,
+      ContentType: fileType,
+      Expires: 60, 
+    });
+
+    return { statusCode: 200, headers: corsHeaders, body: JSON.stringify({ uploadUrl, imageUrl: key }) };
+  } catch (err) {
+    console.error("Error generating upload URL:", err);
+    return { statusCode: 500, headers: corsHeaders, body: JSON.stringify({ error: err.message }) };
+  }
+};
