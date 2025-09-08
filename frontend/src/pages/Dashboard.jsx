@@ -1,82 +1,104 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import { useNavigate, Link } from "react-router-dom";
 import PostForm from "../components/PostForm";
+import axios from "axios";
 
 function Dashboard() {
   const navigate = useNavigate();
-  const [user, setUser] = useState(""); 
-  const [posts, setPosts] = useState([]);
-  const [loadingPosts, setLoadingPosts] = useState(true);
+  const [user, setUser] = useState(null);
+  const [loadingUser, setLoadingUser] = useState(true);
+  const [menuOpen, setMenuOpen] = useState(false);
 
+  const token = localStorage.getItem("token");
+
+  const fetchUser = async () => {
+    try {
+      const res = await axios.get(
+        "https://g6ihp05rd9.execute-api.ca-central-1.amazonaws.com/auth/me",
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setUser(res.data);
+    } catch (err) {
+      console.error("Error fetching user:", err);
+      localStorage.removeItem("token");
+      navigate("/");
+    } finally {
+      setLoadingUser(false);
+    }
+  };
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
     if (!token) {
       navigate("/");
-    } else {
-      setUser("John Doe");
-
-      const fetchPosts = async () => {
-        try {
-          const res = await axios.get(
-            "https://g6ihp05rd9.execute-api.ca-central-1.amazonaws.com/posts",
-            { headers: { Authorization: `Bearer ${token}` } }
-          );
-          setPosts(res.data);
-        } catch (err) {
-          console.log("Error fetching posts:", err);
-        } finally {
-          setLoadingPosts(false);
-        }
-      };
-      fetchPosts();
+      return;
     }
-  }, [navigate]);
+    fetchUser();
+  }, [token, navigate]);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
     navigate("/");
   };
 
-  
-  const handlePostCreated = (newPost) => {
-    setPosts([newPost, ...posts]); 
+  const handlePostCreated = () => {
+    console.log("New post created!");
   };
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
-      <header className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-800">Welcome, {user}!</h1>
-        <button
-          onClick={handleLogout}
-          className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors"
-        >
-          Logout
-        </button>
+      <header className="flex justify-between items-center mb-8 relative">
+        <h1 className="text-3xl font-bold text-gray-800">
+          {loadingUser ? "Loading user..." : `Welcome, ${user?.name || "User"}!`}
+        </h1>
+
+        <div className="flex items-center space-x-4">
+          {/* My Posts Link */}
+          <Link
+            to="/my-posts"
+            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+          >
+            My Posts
+          </Link>
+
+          {/* Profile Dropdown */}
+          <div className="relative">
+            <button
+              onClick={() => setMenuOpen(!menuOpen)}
+              className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center text-gray-700 font-semibold"
+            >
+              {user?.name ? user.name.charAt(0).toUpperCase() : "U"}
+            </button>
+
+            {menuOpen && (
+              <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border z-10">
+                <button
+                  onClick={() => {
+                    setMenuOpen(false);
+                    navigate("/profile");
+                  }}
+                  className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                >
+                  Profile
+                </button>
+                <button
+                  onClick={() => {
+                    setMenuOpen(false);
+                    handleLogout();
+                  }}
+                  className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-red-500"
+                >
+                  Logout
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
       </header>
 
-      <PostForm onPostCreated={handlePostCreated} />
-
-
-      <div className="space-y-4 max-w-2xl mt-8">
-        {loadingPosts ? (
-          <p>Loading posts...</p>
-        ) : posts.length === 0 ? (
-          <p className="text-gray-500">No posts yet. Start sharing your thoughts!</p>
-        ) : (
-          posts.map((post) => (
-            <div
-              key={post.postId}
-              className="bg-white p-4 rounded-xl shadow-sm cursor-pointer hover:bg-gray-100 transition-colors"
-              onClick={() => navigate(`/posts/${post.postId}`)}
-            >
-              <h3 className="font-semibold text-gray-800">{post.title}</h3>
-              <p className="text-gray-600 mt-1">{post.content.substring(0, 100)}...</p>
-            </div>
-          ))
-        )}
-      </div>
+      {/* Post Form */}
+      <section className="mt-8">
+        <PostForm onPostCreated={handlePostCreated} />
+      </section>
     </div>
   );
 }

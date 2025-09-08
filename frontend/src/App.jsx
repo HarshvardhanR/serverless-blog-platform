@@ -3,6 +3,8 @@ import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
 import PostDetails from "./pages/PostDetails";
 import ProtectedRoute from "./components/ProtectedRoutes"; 
+import Profile from "./pages/Profile";
+import UserPosts from "./pages/UserPosts";
 
 function App() {
   return (
@@ -24,6 +26,24 @@ function App() {
           element={
             <ProtectedRoute>
               <PostDetails />
+            </ProtectedRoute>
+          }
+        />
+
+         <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/my-posts"
+          element={
+            <ProtectedRoute>
+              <UserPosts />
             </ProtectedRoute>
           }
         />
