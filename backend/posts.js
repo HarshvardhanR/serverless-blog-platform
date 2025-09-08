@@ -87,6 +87,35 @@ export const getPosts = async (event) => {
 };
 
 
+// export const getUserPosts = async (event) => {
+//   const optionsResponse = handleOptions(event);
+//   if (optionsResponse) return optionsResponse;
+
+//   try {
+//     const userId = requireAuth(event);
+
+//     const result = await dynamo.scan({
+//       TableName: POST_TABLE,
+//       FilterExpression: "userId = :uid",
+//       ExpressionAttributeValues: { ":uid": userId },
+//     }).promise();
+
+//     const postsWithSignedUrls = result.Items.map(post => ({
+//       ...post,
+//       imageUrl: getSignedImageUrl(post.imageUrl),
+//     }));
+
+//     return {
+//       statusCode: 200,
+//       headers: corsHeaders,
+//       body: JSON.stringify(postsWithSignedUrls),
+//     };
+//   } catch (err) {
+//     console.error("Error fetching user posts:", err);
+//     return { statusCode: 401, headers: corsHeaders, body: JSON.stringify({ error: err.message }) };
+//   }
+// };
+
 export const getUserPosts = async (event) => {
   const optionsResponse = handleOptions(event);
   if (optionsResponse) return optionsResponse;
@@ -96,7 +125,7 @@ export const getUserPosts = async (event) => {
 
     const params = {
       TableName: POST_TABLE,
-      IndexName: "authorPostsIndex", 
+      IndexName: "userPostsIndex",
       KeyConditionExpression: "userId = :uid",
       ExpressionAttributeValues: { ":uid": userId },
     };
@@ -108,12 +137,17 @@ export const getUserPosts = async (event) => {
       imageUrl: getSignedImageUrl(post.imageUrl),
     }));
 
-    return { statusCode: 200, headers: corsHeaders, body: JSON.stringify(postsWithSignedUrls) };
+    return {
+      statusCode: 200,
+      headers: corsHeaders,
+      body: JSON.stringify(postsWithSignedUrls),
+    };
   } catch (err) {
     console.error("Error fetching user posts:", err);
     return { statusCode: 401, headers: corsHeaders, body: JSON.stringify({ error: err.message }) };
   }
 };
+
 
 
 export const getPostById = async (event) => {

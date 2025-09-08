@@ -58,6 +58,28 @@ provider:
             - arn:aws:s3:::${self:custom.postImagesBucket}
 
 functions:
+
+  me:
+    handler: auth.me
+    events:
+      - httpApi:
+          path: /auth/me
+          method: get
+
+  updateMe:
+    handler: auth.updateMe
+    events:
+      - httpApi:
+          path: /auth/me
+          method: put
+
+  getProfileUploadUrl:
+    handler: profile.getProfileUploadUrl
+    events:
+      - httpApi:
+          path: /auth/profile/upload-url
+          method: get
+
   register:
     handler: auth.register
     events:
