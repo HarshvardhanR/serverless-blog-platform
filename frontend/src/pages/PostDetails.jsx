@@ -93,22 +93,22 @@ function PostDetails() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
+        whileHover={{ y: -5, scale: 1.01, boxShadow: "0 15px 30px rgba(0,0,0,0.15)" }}
+        transition={{ type: "spring", stiffness: 250, damping: 20 }}
         className="bg-white p-6 rounded-xl shadow-lg mb-8"
       >
-        <h1 className="text-3xl font-bold mb-3">{post.title}</h1>
+        <h1 className="text-3xl font-bold mb-3 text-gray-800">{post.title}</h1>
 
         {post.imageUrl && (
           <img
             src={post.imageUrl}
             alt="Post"
-            className="w-full max-h-96 object-cover mb-4 rounded-lg shadow"
+            className="w-full max-h-96 object-cover mb-4 rounded-lg shadow-lg"
           />
         )}
 
         <div className="prose max-w-none text-gray-700 mb-4">
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>
-            {post.content}
-          </ReactMarkdown>
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>{post.content}</ReactMarkdown>
         </div>
 
         <p className="text-gray-400 text-sm">
@@ -122,7 +122,7 @@ function PostDetails() {
         animate={{ opacity: 1 }}
         className="bg-white p-6 rounded-xl shadow-lg"
       >
-        <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+        <h2 className="text-xl font-semibold mb-4 flex items-center gap-2 text-gray-700">
           <MessageSquare size={20} /> Comments
         </h2>
 
@@ -155,11 +155,11 @@ function PostDetails() {
                 key={c.commentId}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
+                whileHover={{ y: -2, scale: 1.01, boxShadow: "0 8px 20px rgba(0,0,0,0.08)" }}
+                transition={{ type: "spring", stiffness: 250, damping: 20 }}
                 className="bg-gray-50 p-4 rounded-lg shadow-sm border"
               >
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                  {c.content}
-                </ReactMarkdown>
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>{c.content}</ReactMarkdown>
                 <p className="text-gray-500 text-xs mt-2">
                   By <span className="font-medium">{c.name}</span> •{" "}
                   {new Date(c.createdAt).toLocaleString()}
