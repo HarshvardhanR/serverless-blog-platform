@@ -43,7 +43,7 @@ The platform uses JWT-based authentication and supports image uploads via signed
 serverless-blog/
 ├─ frontend/
 │  ├─ src/
-│  │  ├─ components/       # React components (PostForm, etc.)
+│  │  ├─ components/       # React components (PostForm, PostCard, etc.)
 │  │  ├─ pages/            # Pages like Dashboard, PostDetails
 │  │  └─ App.js
 ├─ backend/
