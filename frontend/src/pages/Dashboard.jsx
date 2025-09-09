@@ -4,6 +4,9 @@ import PostForm from "../components/PostForm";
 import axios from "axios";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+// eslint-disable-next-line no-unused-vars
+import { motion, AnimatePresence } from "framer-motion";
+import { User, MessageCircle, X } from "lucide-react";
 
 function Dashboard() {
   const navigate = useNavigate();
@@ -142,17 +145,18 @@ function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gray-50 p-6 overflow-hidden">
       {/* Header */}
       <header className="flex justify-between items-center mb-8 relative">
-        <h1 className="text-3xl font-bold text-gray-800">
+        <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-2">
+          <User className="w-6 h-6 text-blue-600" />
           {loadingUser ? "Loading user..." : `Welcome, ${user?.name || "User"}!`}
         </h1>
 
         <div className="flex items-center space-x-4">
           <Link
             to="/my-posts"
-            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
           >
             My Posts
           </Link>
@@ -160,55 +164,66 @@ function Dashboard() {
           <div className="relative">
             <button
               onClick={() => setMenuOpen(!menuOpen)}
-              className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center text-gray-700 font-semibold"
+              className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center text-gray-700 font-semibold hover:ring-2 hover:ring-blue-400 transition"
             >
               {user?.name ? user.name.charAt(0).toUpperCase() : "U"}
             </button>
 
             {menuOpen && (
-              <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border z-10">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border z-10 overflow-hidden"
+              >
                 <button
                   onClick={() => {
                     setMenuOpen(false);
                     navigate("/profile");
                   }}
-                  className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                  className="block w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2"
                 >
-                  Profile
+                  <User className="w-4 h-4" /> Profile
                 </button>
                 <button
                   onClick={() => {
                     setMenuOpen(false);
                     handleLogout();
                   }}
-                  className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-red-500"
+                  className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-red-500 flex items-center gap-2"
                 >
-                  Logout
+                  <X className="w-4 h-4" /> Logout
                 </button>
-              </div>
+              </motion.div>
             )}
           </div>
         </div>
       </header>
 
-      
+      {/* Create Post */}
       <div className="mb-6">
         <button
           onClick={() => setShowPostForm(!showPostForm)}
-          className="px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+          className="px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors shadow-lg"
         >
           {showPostForm ? "Cancel" : "Create Post"}
         </button>
       </div>
 
-      
-      {showPostForm && (
-        <section className="mb-12">
-          <PostForm onPostCreated={handlePostCreated} />
-        </section>
-      )}
+      <AnimatePresence>
+        {showPostForm && (
+          <motion.section
+            className="mb-12"
+            initial={{ opacity: 0, y: -50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -50 }}
+          >
+            <PostForm onPostCreated={handlePostCreated} />
+          </motion.section>
+        )}
+      </AnimatePresence>
 
-      
+      {/* Posts Feed */}
       <section>
         <h2 className="text-2xl font-bold mb-4">Feed</h2>
 
@@ -217,60 +232,67 @@ function Dashboard() {
         {!loadingPosts && displayedPosts.length === 0 && <p>No posts available.</p>}
 
         <div className="space-y-6">
-          {displayedPosts.map((post) => (
-            <div
-              key={post.postId}
-              className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow"
-            >
-              <h3 className="text-xl font-semibold mb-2">{post.title}</h3>
+          <AnimatePresence>
+            {displayedPosts.map((post) => (
+              <motion.div
+                key={post.postId}
+                layout
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="bg-white p-6 rounded-2xl shadow-md hover:shadow-xl transition-shadow cursor-pointer"
+                onClick={() => openPostModal(post)}
+              >
+                <h3 className="text-xl font-semibold mb-2">{post.title}</h3>
 
-              {post.imageUrl && (
-                <img
-                  src={post.imageUrl}
-                  alt={post.title}
-                  className="w-full max-h-64 object-cover mb-4 rounded-lg"
-                />
-              )}
+                {post.imageUrl && (
+                  <img
+                    src={post.imageUrl}
+                    alt={post.title}
+                    className="w-full max-h-64 object-cover mb-4 rounded-xl"
+                  />
+                )}
 
-              <div className="text-gray-700 mb-2 prose max-w-full">
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                  {post.content.length > 200
-                    ? post.content.slice(0, 200) + "..."
-                    : post.content}
-                </ReactMarkdown>
-              </div>
+                <div className="text-gray-700 prose max-w-full">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    {post.content.length > 200
+                      ? post.content.slice(0, 200) + "..."
+                      : post.content}
+                  </ReactMarkdown>
+                </div>
 
-              <div className="flex justify-between items-center mt-4">
-                <button
-                  onClick={() => openPostModal(post)}
-                  className="text-blue-500 hover:underline"
-                >
-                  Read More
-                </button>
-                <p className="text-gray-400 text-sm">
-                  {new Date(post.createdAt).toLocaleString()}
-                </p>
-              </div>
-            </div>
-          ))}
+                <div className="flex justify-between items-center mt-4 text-sm text-gray-400">
+                  <p>
+                    <MessageCircle className="inline w-4 h-4 mr-1" />
+                    {comments.length} comments
+                  </p>
+                  <p>{new Date(post.createdAt).toLocaleString()}</p>
+                </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
         </div>
 
-      
+        {/* Pagination */}
         <div className="flex justify-between mt-6">
           <button
             onClick={loadPrevPage}
             disabled={page === 0}
-            className={`px-6 py-3 rounded-lg text-white ${
-              page === 0 ? "bg-gray-400 cursor-not-allowed" : "bg-gray-800 hover:bg-gray-900"
+            className={`px-6 py-3 rounded-lg text-white transition ${
+              page === 0
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-gray-800 hover:bg-gray-900"
             }`}
           >
-            Previous
+                       Previous
           </button>
           <button
             onClick={loadNextPage}
             disabled={!hasMore}
-            className={`px-6 py-3 rounded-lg text-white ${
-              !hasMore ? "bg-gray-400 cursor-not-allowed" : "bg-gray-800 hover:bg-gray-900"
+            className={`px-6 py-3 rounded-lg text-white transition ${
+              !hasMore
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-gray-800 hover:bg-gray-900"
             }`}
           >
             Next
@@ -278,85 +300,103 @@ function Dashboard() {
         </div>
       </section>
 
-  
-      {selectedPost && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-start p-6 overflow-auto z-50">
-          <div className="bg-white rounded-xl shadow-lg w-full max-w-3xl p-6 relative">
-            <button
-              onClick={() => setSelectedPost(null)}
-              className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-2xl font-bold"
+      {/* Post Modal */}
+      <AnimatePresence>
+        {selectedPost && (
+          <motion.div
+            className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-start p-6 overflow-auto z-50"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className="bg-white rounded-2xl shadow-xl w-full max-w-3xl p-6 relative"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
             >
-              &times;
-            </button>
+              <button
+                onClick={() => setSelectedPost(null)}
+                className="absolute top-4 right-4 text-gray-500 hover:text-gray-800"
+              >
+                <X className="w-6 h-6" />
+              </button>
 
-            <h2 className="text-2xl font-bold mb-2">{selectedPost.title}</h2>
+              <h2 className="text-2xl font-bold mb-2">{selectedPost.title}</h2>
 
-            {selectedPost.imageUrl && (
-              <img
-                src={selectedPost.imageUrl}
-                alt={selectedPost.title}
-                className="w-full max-h-96 object-cover mb-4 rounded-lg"
-              />
-            )}
-
-            <div className="text-gray-700 mb-4 prose">
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                {selectedPost.content}
-              </ReactMarkdown>
-            </div>
-
-            <p className="text-gray-400 text-sm mb-4">
-              Posted at: {new Date(selectedPost.createdAt).toLocaleString()}
-            </p>
-
-            
-            <div className="mb-4">
-              <h3 className="text-xl font-semibold mb-2">Comments</h3>
-
-              
-              <form onSubmit={handleCommentSubmit} className="mb-4">
-                <textarea
-                  placeholder="Write your comment in Markdown..."
-                  value={commentText}
-                  onChange={(e) => setCommentText(e.target.value)}
-                  className="w-full p-2 border rounded-lg mb-2 min-h-[80px]"
-                  required
+              {selectedPost.imageUrl && (
+                <img
+                  src={selectedPost.imageUrl}
+                  alt={selectedPost.title}
+                  className="w-full max-h-96 object-cover mb-4 rounded-xl"
                 />
-                <button
-                  type="submit"
-                  disabled={postingComment}
-                  className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
-                >
-                  {postingComment ? "Posting..." : "Post Comment"}
-                </button>
-              </form>
-
-  
-              {comments.length === 0 ? (
-                <p className="text-gray-500">No comments yet.</p>
-              ) : (
-                <div className="space-y-4">
-                  {comments.map((c) => (
-                    <div
-                      key={c.commentId}
-                      className="bg-gray-100 p-3 rounded-lg shadow-sm prose"
-                    >
-                      <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                        {c.content}
-                      </ReactMarkdown>
-                      <p className="text-gray-500 text-xs mt-1">
-                        By {c.name} at {new Date(c.createdAt).toLocaleString()}
-                      </p>
-                    </div>
-                  ))}
-                </div>
               )}
-            </div>
-          </div>
-        </div>
-      )}
+
+              <div className="text-gray-700 prose mb-4 max-w-full">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  {selectedPost.content}
+                </ReactMarkdown>
+              </div>
+
+              <p className="text-gray-400 text-sm mb-4">
+                Posted at: {new Date(selectedPost.createdAt).toLocaleString()}
+              </p>
+
+              {/* Comments Section */}
+              <div className="mb-4">
+                <h3 className="text-xl font-semibold mb-2 flex items-center gap-2">
+                  <MessageCircle className="w-5 h-5 text-blue-500" /> Comments
+                </h3>
+
+                <form onSubmit={handleCommentSubmit} className="mb-4">
+                  <textarea
+                    placeholder="Write your comment in Markdown..."
+                    value={commentText}
+                    onChange={(e) => setCommentText(e.target.value)}
+                    className="w-full p-2 border rounded-lg mb-2 min-h-[80px]"
+                    required
+                  />
+                  <button
+                    type="submit"
+                    disabled={postingComment}
+                    className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors shadow"
+                  >
+                    {postingComment ? "Posting..." : "Post Comment"}
+                  </button>
+                </form>
+
+                {comments.length === 0 ? (
+                  <p className="text-gray-500">No comments yet.</p>
+                ) : (
+                  <div className="space-y-4 max-h-96 overflow-y-auto">
+                    <AnimatePresence>
+                      {comments.map((c) => (
+                        <motion.div
+                          key={c.commentId}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                          className="bg-gray-100 p-3 rounded-xl shadow-sm"
+                        >
+                          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                            {c.content}
+                          </ReactMarkdown>
+                          <p className="text-gray-500 text-xs mt-1">
+                            By {c.name} at {new Date(c.createdAt).toLocaleString()}
+                          </p>
+                        </motion.div>
+                      ))}
+                    </AnimatePresence>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
 
 export default Dashboard;
+

@@ -2,6 +2,9 @@ import { useState } from "react";
 import axios from "axios";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { UploadCloud, Eye } from "lucide-react";
+// eslint-disable-next-line no-unused-vars
+import { motion } from "framer-motion";
 
 function PostForm({ onPostCreated }) {
   const [title, setTitle] = useState("");
@@ -54,53 +57,70 @@ function PostForm({ onPostCreated }) {
   };
 
   return (
-    <form
+    <motion.form
       onSubmit={handleSubmit}
-      className="bg-white p-6 rounded-2xl shadow-lg w-full max-w-5xl mx-auto"
+      className="bg-white p-8 rounded-3xl shadow-xl w-full max-w-5xl mx-auto overflow-hidden"
+      initial={{ opacity: 0, y: 50 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
     >
-      <h2 className="text-xl font-bold mb-4">Create a Post</h2>
+      <h2 className="text-2xl font-bold mb-6 text-gray-800 flex items-center gap-2">
+        <Eye className="w-6 h-6 text-blue-600" /> Create a Post
+      </h2>
 
       <input
         type="text"
         placeholder="Title"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        className="w-full p-2 border rounded-lg mb-4"
+        className="w-full p-3 border border-gray-300 rounded-xl mb-6 focus:ring-2 focus:ring-blue-400 outline-none text-gray-700"
         required
       />
 
-      <div className="flex flex-col md:flex-row gap-4 mb-4">
+      <div className="flex flex-col md:flex-row gap-6 mb-6">
         <textarea
           placeholder="Write your content in Markdown..."
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          className="w-full md:w-1/2 p-2 border rounded-lg min-h-[400px]"
+          className="w-full md:w-1/2 p-4 border border-gray-300 rounded-xl min-h-[400px] focus:ring-2 focus:ring-blue-400 outline-none text-gray-700"
         />
 
-        <div className="w-full md:w-1/2 p-4 border rounded-lg bg-gray-50 overflow-auto min-h-[400px]">
-          <p className="text-gray-500 mb-2 font-semibold">Live Preview:</p>
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>
-            {content || "Nothing to preview yet..."}
-          </ReactMarkdown>
+        <div className="w-full md:w-1/2 p-4 border border-gray-300 rounded-xl bg-gray-50 overflow-auto min-h-[400px]">
+          <p className="text-gray-500 mb-2 font-semibold flex items-center gap-2">
+            <Eye className="w-5 h-5 text-gray-400" /> Live Preview:
+          </p>
+
+          {/* Wrap ReactMarkdown in a container instead of using className */}
+          <div className="prose max-w-full text-gray-700">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+              {content || "Nothing to preview yet..."}
+            </ReactMarkdown>
+          </div>
         </div>
       </div>
 
       {/* Image upload */}
-      <input
-        type="file"
-        accept="image/*"
-        onChange={(e) => setImageFile(e.target.files[0])}
-        className="mb-4"
-      />
+      <label className="flex items-center gap-2 mb-6 cursor-pointer bg-blue-100 text-blue-700 px-4 py-2 rounded-xl hover:bg-blue-200 transition">
+        <UploadCloud className="w-5 h-5" />
+        {imageFile ? imageFile.name : "Upload Image"}
+        <input
+          type="file"
+          accept="image/*"
+          onChange={(e) => setImageFile(e.target.files[0])}
+          className="hidden"
+        />
+      </label>
 
-      <button
+      <motion.button
         type="submit"
         disabled={loading}
-        className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+        className="w-full py-3 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 transition-colors shadow-md"
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
       >
         {loading ? "Posting..." : "Post"}
-      </button>
-    </form>
+      </motion.button>
+    </motion.form>
   );
 }
 
