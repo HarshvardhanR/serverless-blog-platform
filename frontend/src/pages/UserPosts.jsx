@@ -11,7 +11,7 @@ function UserPosts() {
 
   const token = localStorage.getItem("token")?.replace(/"/g, "");
 
-  // Fetch user info
+  
   const fetchUser = async () => {
     if (!token) return setError("No token provided");
 
@@ -27,7 +27,7 @@ function UserPosts() {
     }
   };
 
-  // Fetch user's posts
+  
   const fetchUserPosts = async () => {
     if (!token) return setError("No token provided");
 

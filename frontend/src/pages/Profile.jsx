@@ -10,14 +10,14 @@ function Profile() {
 
   const token = localStorage.getItem("token");
 
-  // Fetch user profile
+  
   const fetchUser = async () => {
     try {
       const res = await axios.get(
         "https://g6ihp05rd9.execute-api.ca-central-1.amazonaws.com/auth/me",
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setUser(res.data); // backend returns signed GET URL for profileImage
+      setUser(res.data); 
     } catch (err) {
       console.error("Error fetching profile:", err);
     } finally {
@@ -29,7 +29,7 @@ function Profile() {
     if (token) fetchUser();
   }, [token]);
 
-  // Handle profile image upload
+
   const handleImageChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -38,25 +38,25 @@ function Profile() {
     try {
       const ext = file.name.split(".").pop();
 
-      // 1️⃣ Get signed PUT URL & key from backend
+      
       const { data: uploadData } = await axios.get(
         "https://g6ihp05rd9.execute-api.ca-central-1.amazonaws.com/auth/profile/upload-url",
         { headers: { Authorization: `Bearer ${token}` }, params: { ext } }
       );
 
-      // 2️⃣ Upload file to S3
+      
       await axios.put(uploadData.uploadUrl, file, {
         headers: { "Content-Type": file.type },
       });
 
-      // 3️⃣ Save S3 key in user profile
+      
       await axios.put(
         "https://g6ihp05rd9.execute-api.ca-central-1.amazonaws.com/auth/me",
         { profileImage: uploadData.key },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      // 4️⃣ Refetch user to get signed GET URL
+      
       await fetchUser();
     } catch (err) {
       console.error("Error uploading profile image:", err);
@@ -95,7 +95,7 @@ function Profile() {
         {/* Profile Avatar */}
         {user.profileImage ? (
           <img
-            src={user.profileImage} // backend returns signed GET URL
+            src={user.profileImage} 
             alt="Profile"
             className="w-32 h-32 rounded-full object-cover border-2 border-gray-300"
           />
@@ -105,7 +105,7 @@ function Profile() {
           </div>
         )}
 
-        {/* Upload button */}
+      
         <label className="mt-2 px-4 py-2 bg-green-500 text-white rounded-lg cursor-pointer hover:bg-green-600">
           {uploading ? "Uploading..." : "Add / Change Profile Picture"}
           <input
@@ -117,7 +117,7 @@ function Profile() {
           />
         </label>
 
-        {/* User Info */}
+        
         <div className="flex flex-col items-center space-y-2">
           {editingName ? (
             <div className="flex space-x-2">

@@ -191,7 +191,7 @@ function Dashboard() {
         </div>
       </header>
 
-      {/* Create Post Button */}
+      
       <div className="mb-6">
         <button
           onClick={() => setShowPostForm(!showPostForm)}
@@ -201,14 +201,14 @@ function Dashboard() {
         </button>
       </div>
 
-      {/* Post Form */}
+      
       {showPostForm && (
         <section className="mb-12">
           <PostForm onPostCreated={handlePostCreated} />
         </section>
       )}
 
-      {/* Feed */}
+      
       <section>
         <h2 className="text-2xl font-bold mb-4">Feed</h2>
 
@@ -255,7 +255,7 @@ function Dashboard() {
           ))}
         </div>
 
-        {/* Pagination Buttons */}
+      
         <div className="flex justify-between mt-6">
           <button
             onClick={loadPrevPage}
@@ -278,7 +278,7 @@ function Dashboard() {
         </div>
       </section>
 
-      {/* Post Details Modal */}
+  
       {selectedPost && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-start p-6 overflow-auto z-50">
           <div className="bg-white rounded-xl shadow-lg w-full max-w-3xl p-6 relative">
@@ -309,11 +309,11 @@ function Dashboard() {
               Posted at: {new Date(selectedPost.createdAt).toLocaleString()}
             </p>
 
-            {/* Comments */}
+            
             <div className="mb-4">
               <h3 className="text-xl font-semibold mb-2">Comments</h3>
 
-              {/* Comment Form */}
+              
               <form onSubmit={handleCommentSubmit} className="mb-4">
                 <textarea
                   placeholder="Write your comment in Markdown..."
@@ -331,7 +331,7 @@ function Dashboard() {
                 </button>
               </form>
 
-              {/* Comment List */}
+  
               {comments.length === 0 ? (
                 <p className="text-gray-500">No comments yet.</p>
               ) : (

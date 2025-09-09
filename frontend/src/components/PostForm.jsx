@@ -69,7 +69,6 @@ function PostForm({ onPostCreated }) {
         required
       />
 
-      {/* Side-by-side layout for textarea and preview */}
       <div className="flex flex-col md:flex-row gap-4 mb-4">
         <textarea
           placeholder="Write your content in Markdown..."

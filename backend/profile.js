@@ -1,4 +1,3 @@
-// profile.js
 import AWS from "aws-sdk";
 import jwt from "jsonwebtoken";
 import { v4 as uuidv4 } from "uuid";
@@ -13,7 +12,6 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "OPTIONS,GET,POST,PUT,DELETE",
 };
 
-// Utility to get userId from token
 const getUserIdFromEvent = (event) => {
   const authHeader = event.headers?.authorization || event.headers?.Authorization;
   if (!authHeader) throw new Error("Missing Authorization header");
@@ -24,7 +22,6 @@ const getUserIdFromEvent = (event) => {
 };
 
 export const getProfileUploadUrl = async (event) => {
-  // Handle CORS preflight
   if (event.httpMethod === "OPTIONS") return { statusCode: 204, headers: corsHeaders };
 
   try {
@@ -43,8 +40,8 @@ export const getProfileUploadUrl = async (event) => {
       statusCode: 200,
       headers: corsHeaders,
       body: JSON.stringify({
-        uploadUrl,  // signed PUT URL for uploading the image
-        key: fileKey // store this in DynamoDB for later GET requests
+        uploadUrl, 
+        key: fileKey 
       }),
     };
   } catch (err) {

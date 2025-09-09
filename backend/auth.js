@@ -9,13 +9,12 @@ const s3 = new AWS.S3();
 const USERS_TABLE = process.env.USER_TABLE;
 const POST_IMAGES_BUCKET = process.env.POST_IMAGES_BUCKET;
 
-// Helper to generate signed GET URL for profile images
 const getSignedProfileUrl = (key) => {
   if (!key) return null;
   return s3.getSignedUrl("getObject", {
     Bucket: POST_IMAGES_BUCKET,
     Key: key,
-    Expires: 300, // 5 minutes
+    Expires: 300, 
   });
 };
 
@@ -25,7 +24,7 @@ export const register = async (event) => {
     return { statusCode: 400, body: JSON.stringify({ error: "Missing fields" }) };
   }
 
-  // ✅ Check if email already exists (using GSI "EmailIndex")
+
   const existing = await dynamo.query({
     TableName: USERS_TABLE,
     IndexName: "EmailIndex",
@@ -101,7 +100,6 @@ export const me = async (event) => {
 
     const { passwordHash, ...safeUser } = user;
 
-    // Generate signed URL if profileImage exists
     if (safeUser.profileImage) {
       safeUser.profileImage = getSignedProfileUrl(safeUser.profileImage);
     }
@@ -157,7 +155,7 @@ export const updateMe = async (event) => {
       ReturnValues: "ALL_NEW",
     }).promise();
 
-    // Fetch updated user
+
     const { Item: user } = await dynamo.get({
       TableName: USERS_TABLE,
       Key: { userId: decoded.userId },
@@ -165,7 +163,6 @@ export const updateMe = async (event) => {
 
     const { passwordHash, ...safeUser } = user;
 
-    // Generate signed URL if profileImage exists
     if (safeUser.profileImage) {
       safeUser.profileImage = getSignedProfileUrl(safeUser.profileImage);
     }

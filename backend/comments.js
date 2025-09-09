@@ -4,16 +4,16 @@ import { requireAuth } from "./utils/requireAuth.js";
 
 const dynamo = new AWS.DynamoDB.DocumentClient();
 const COMMENT_TABLE = process.env.COMMENT_TABLE;
-const USERS_TABLE = process.env.USER_TABLE; // <--- for fetching user name
+const USERS_TABLE = process.env.USER_TABLE;
 
-// Common CORS headers
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "Authorization,Content-Type",
   "Access-Control-Allow-Methods": "OPTIONS,GET,POST,PUT,DELETE",
 };
 
-// Handle preflight OPTIONS
+
 const handleOptions = (event) => {
   if (event.httpMethod === "OPTIONS") {
     return { statusCode: 200, headers: corsHeaders, body: "" };
@@ -21,7 +21,7 @@ const handleOptions = (event) => {
   return null;
 };
 
-// ✅ Create a new comment
+
 export const createComment = async (event) => {
   const optionsResponse = handleOptions(event);
   if (optionsResponse) return optionsResponse;
@@ -37,7 +37,7 @@ export const createComment = async (event) => {
       return { statusCode: 400, headers: corsHeaders, body: JSON.stringify({ error: "Comment too long (max 500 chars)" }) };
     }
 
-    // Fetch user name
+  
     const { Item: user } = await dynamo.get({
       TableName: USERS_TABLE,
       Key: { userId },
@@ -48,7 +48,7 @@ export const createComment = async (event) => {
       commentId,
       postId,
       userId,
-      name: user?.name || "Unknown", // store name here
+      name: user?.name || "Unknown", 
       content: content.trim(),
       createdAt: new Date().toISOString(),
     };
@@ -62,7 +62,7 @@ export const createComment = async (event) => {
   }
 };
 
-// ✅ Get all comments
+
 export const getComments = async (event) => {
   const optionsResponse = handleOptions(event);
   if (optionsResponse) return optionsResponse;
@@ -86,7 +86,7 @@ export const getComments = async (event) => {
   }
 };
 
-// ✅ Get comments by logged-in user
+
 export const getUserComments = async (event) => {
   const optionsResponse = handleOptions(event);
   if (optionsResponse) return optionsResponse;
@@ -107,7 +107,7 @@ export const getUserComments = async (event) => {
   }
 };
 
-// ✅ Get comments for a specific post
+
 export const getPostComments = async (event) => {
   const optionsResponse = handleOptions(event);
   if (optionsResponse) return optionsResponse;
@@ -132,7 +132,6 @@ export const getPostComments = async (event) => {
   }
 };
 
-// ✅ Update a comment (owner only)
 export const updateComment = async (event) => {
   const optionsResponse = handleOptions(event);
   if (optionsResponse) return optionsResponse;
@@ -168,7 +167,6 @@ export const updateComment = async (event) => {
   }
 };
 
-// ✅ Delete a comment (owner only)
 export const deleteComment = async (event) => {
   const optionsResponse = handleOptions(event);
   if (optionsResponse) return optionsResponse;

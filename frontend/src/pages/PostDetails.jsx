@@ -138,7 +138,7 @@ function PostDetails() {
         key={c.commentId}
         className="bg-gray-100 p-3 rounded-lg shadow-sm prose max-w-full"
       >
-        {/* Markdown rendering */}
+        
         <ReactMarkdown remarkPlugins={[remarkGfm]}>
           {c.content}
         </ReactMarkdown>

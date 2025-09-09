@@ -30,7 +30,7 @@ const getSignedImageUrl = (key) => {
   return s3.getSignedUrl("getObject", {
     Bucket: POST_IMAGES_BUCKET,
     Key: key,
-    Expires: 60 * 5, // 5 minutes
+    Expires: 60 * 5,
   });
 };
 
@@ -87,35 +87,6 @@ export const getPosts = async (event) => {
 };
 
 
-// export const getUserPosts = async (event) => {
-//   const optionsResponse = handleOptions(event);
-//   if (optionsResponse) return optionsResponse;
-
-//   try {
-//     const userId = requireAuth(event);
-
-//     const result = await dynamo.scan({
-//       TableName: POST_TABLE,
-//       FilterExpression: "userId = :uid",
-//       ExpressionAttributeValues: { ":uid": userId },
-//     }).promise();
-
-//     const postsWithSignedUrls = result.Items.map(post => ({
-//       ...post,
-//       imageUrl: getSignedImageUrl(post.imageUrl),
-//     }));
-
-//     return {
-//       statusCode: 200,
-//       headers: corsHeaders,
-//       body: JSON.stringify(postsWithSignedUrls),
-//     };
-//   } catch (err) {
-//     console.error("Error fetching user posts:", err);
-//     return { statusCode: 401, headers: corsHeaders, body: JSON.stringify({ error: err.message }) };
-//   }
-// };
-
 export const getUserPosts = async (event) => {
   const optionsResponse = handleOptions(event);
   if (optionsResponse) return optionsResponse;
@@ -151,7 +122,7 @@ export const getUserPosts = async (event) => {
 
 
 export const getPostById = async (event) => {
-  // Handle CORS preflight
+
   if (event.httpMethod === "OPTIONS") {
     return { statusCode: 200, headers: corsHeaders, body: "" };
   }
@@ -167,7 +138,6 @@ export const getPostById = async (event) => {
       };
     }
 
-    // Get the post from DynamoDB
     const result = await dynamo
       .get({ TableName: POST_TABLE, Key: { postId } })
       .promise();
