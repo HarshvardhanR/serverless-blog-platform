@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 function PostDetails() {
   const { postId } = useParams();
@@ -15,45 +17,40 @@ function PostDetails() {
 
   const token = localStorage.getItem("token");
 
-useEffect(() => {
-  if (!token) {
-    navigate("/");
-    return;
-  }
-
-  const fetchPostAndComments = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const [postRes, commentsRes] = await Promise.all([
-        axios.get(
-          `https://g6ihp05rd9.execute-api.ca-central-1.amazonaws.com/posts/${postId}`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        ),
-        axios.get(
-          `https://g6ihp05rd9.execute-api.ca-central-1.amazonaws.com/comments/post/${postId}`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        ),
-      ]);
-
-      console.log("Post fetched:", postRes.data); 
-      if (postRes.data.imageUrl) {
-        console.log("Image URL:", postRes.data.imageUrl); 
-      }
-
-      setPost(postRes.data);
-      setComments(commentsRes.data);
-    } catch (err) {
-      console.error("Error fetching post or comments:", err);
-      setError("Failed to load post or comments.");
-    } finally {
-      setLoading(false);
+  useEffect(() => {
+    if (!token) {
+      navigate("/");
+      return;
     }
-  };
 
-  fetchPostAndComments();
-}, [postId, navigate, token]);
+    const fetchPostAndComments = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const [postRes, commentsRes] = await Promise.all([
+          axios.get(
+            `https://g6ihp05rd9.execute-api.ca-central-1.amazonaws.com/posts/${postId}`,
+            { headers: { Authorization: `Bearer ${token}` } }
+          ),
+          axios.get(
+            `https://g6ihp05rd9.execute-api.ca-central-1.amazonaws.com/comments/post/${postId}`,
+            { headers: { Authorization: `Bearer ${token}` } }
+          ),
+        ]);
+
+        setPost(postRes.data);
+        setComments(commentsRes.data);
+      } catch (err) {
+        console.error("Error fetching post or comments:", err);
+        setError("Failed to load post or comments.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPostAndComments();
+  }, [postId, navigate, token]);
 
   const handleCommentSubmit = async (e) => {
     e.preventDefault();
@@ -92,7 +89,6 @@ useEffect(() => {
       <div className="bg-white p-6 rounded-xl shadow-md mb-8">
         <h1 className="text-2xl font-bold mb-2">{post.title}</h1>
 
-        
         {post.imageUrl && (
           <img
             src={post.imageUrl}
@@ -101,7 +97,12 @@ useEffect(() => {
           />
         )}
 
-        <p className="text-gray-700">{post.content}</p>
+        <div className="text-gray-700 mb-2 prose">
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+            {post.content}
+          </ReactMarkdown>
+        </div>
+
         <p className="text-gray-400 text-sm mt-2">
           Posted at: {new Date(post.createdAt).toLocaleString()}
         </p>
@@ -112,10 +113,10 @@ useEffect(() => {
 
         <form onSubmit={handleCommentSubmit} className="mb-6">
           <textarea
-            placeholder="Write a comment..."
+            placeholder="Write your comment in Markdown..."
             value={commentText}
             onChange={(e) => setCommentText(e.target.value)}
-            className="w-full p-2 border rounded-lg mb-2"
+            className="w-full p-2 border rounded-lg mb-2 min-h-[80px]"
             rows={3}
             required
           />
@@ -129,22 +130,27 @@ useEffect(() => {
         </form>
 
         {comments.length === 0 ? (
-          <p className="text-gray-500">No comments yet.</p>
-        ) : (
-          <div className="space-y-4">
-            {comments.map((c) => (
-              <div
-                key={c.commentId}
-                className="bg-gray-100 p-3 rounded-lg shadow-sm"
-              >
-                <p className="text-gray-800">{c.content}</p>
-                <p className="text-gray-500 text-xs mt-1">
-                  By {c.userId} at {new Date(c.createdAt).toLocaleString()}
-                </p>
-              </div>
-            ))}
-          </div>
-        )}
+  <p className="text-gray-500">No comments yet.</p>
+) : (
+  <div className="space-y-4">
+    {comments.map((c) => (
+      <div
+        key={c.commentId}
+        className="bg-gray-100 p-3 rounded-lg shadow-sm prose max-w-full"
+      >
+        {/* Markdown rendering */}
+        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+          {c.content}
+        </ReactMarkdown>
+
+        <p className="text-gray-500 text-xs mt-1">
+          By {c.name} at {new Date(c.createdAt).toLocaleString()}
+        </p>
+      </div>
+    ))}
+  </div>
+)}
+
       </div>
     </div>
   );

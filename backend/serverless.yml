@@ -143,6 +143,20 @@ functions:
           path: /comments/post/{postId}
           method: get
 
+  updateComment:
+    handler: comments.updateComment
+    events:
+      - httpApi:
+          path: /comments/{commentId}
+          method: put
+
+  deleteComment:
+    handler: comments.deleteComment
+    events:
+      - httpApi:
+          path: /comments/{commentId}
+          method: delete
+
   getPostById:
     handler: posts.getPostById
     events:

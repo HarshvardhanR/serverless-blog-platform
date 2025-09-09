@@ -21,18 +21,40 @@ const getSignedProfileUrl = (key) => {
 
 export const register = async (event) => {
   const { name, email, password } = JSON.parse(event.body ?? "{}");
-  if (!name || !email || !password)
+  if (!name || !email || !password) {
     return { statusCode: 400, body: JSON.stringify({ error: "Missing fields" }) };
+  }
+
+  // ✅ Check if email already exists (using GSI "EmailIndex")
+  const existing = await dynamo.query({
+    TableName: USERS_TABLE,
+    IndexName: "EmailIndex",
+    KeyConditionExpression: "email = :email",
+    ExpressionAttributeValues: { ":email": email },
+  }).promise();
+
+  if (existing.Items.length > 0) {
+    return { statusCode: 409, body: JSON.stringify({ error: "Email already exists" }) };
+  }
 
   const passwordHash = await hashPassword(password);
   const userId = uuidv4();
 
   await dynamo.put({
     TableName: USERS_TABLE,
-    Item: { userId, name, email, passwordHash, createdAt: new Date().toISOString() },
+    Item: {
+      userId,
+      name,
+      email,
+      passwordHash,
+      createdAt: new Date().toISOString(),
+    },
   }).promise();
 
-  return { statusCode: 201, body: JSON.stringify({ userId, name, email }) };
+  return {
+    statusCode: 201,
+    body: JSON.stringify({ userId, name, email }),
+  };
 };
 
 export const login = async (event) => {

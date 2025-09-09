@@ -4,27 +4,24 @@ import { requireAuth } from "./utils/requireAuth.js";
 
 const dynamo = new AWS.DynamoDB.DocumentClient();
 const COMMENT_TABLE = process.env.COMMENT_TABLE;
+const USERS_TABLE = process.env.USER_TABLE; // <--- for fetching user name
 
-// Helper function to return CORS headers
+// Common CORS headers
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "Authorization,Content-Type",
   "Access-Control-Allow-Methods": "OPTIONS,GET,POST,PUT,DELETE",
 };
 
-// Handle preflight OPTIONS requests
+// Handle preflight OPTIONS
 const handleOptions = (event) => {
   if (event.httpMethod === "OPTIONS") {
-    return {
-      statusCode: 200,
-      headers: corsHeaders,
-      body: "",
-    };
+    return { statusCode: 200, headers: corsHeaders, body: "" };
   }
   return null;
 };
 
-// Create a new comment
+// ✅ Create a new comment
 export const createComment = async (event) => {
   const optionsResponse = handleOptions(event);
   if (optionsResponse) return optionsResponse;
@@ -33,93 +30,84 @@ export const createComment = async (event) => {
     const userId = requireAuth(event);
     const { postId, content } = JSON.parse(event.body ?? "{}");
 
-    if (!postId || !content) {
-      return {
-        statusCode: 400,
-        headers: corsHeaders,
-        body: JSON.stringify({ error: "Missing fields" }),
-      };
+    if (!postId || !content || content.trim().length === 0) {
+      return { statusCode: 400, headers: corsHeaders, body: JSON.stringify({ error: "Missing or invalid fields" }) };
     }
+    if (content.length > 500) {
+      return { statusCode: 400, headers: corsHeaders, body: JSON.stringify({ error: "Comment too long (max 500 chars)" }) };
+    }
+
+    // Fetch user name
+    const { Item: user } = await dynamo.get({
+      TableName: USERS_TABLE,
+      Key: { userId },
+    }).promise();
 
     const commentId = uuidv4();
     const comment = {
       commentId,
       postId,
       userId,
-      content,
+      name: user?.name || "Unknown", // store name here
+      content: content.trim(),
       createdAt: new Date().toISOString(),
     };
 
     await dynamo.put({ TableName: COMMENT_TABLE, Item: comment }).promise();
 
-    return {
-      statusCode: 201,
-      headers: corsHeaders,
-      body: JSON.stringify(comment),
-    };
+    return { statusCode: 201, headers: corsHeaders, body: JSON.stringify(comment) };
   } catch (err) {
-    return {
-      statusCode: 401,
-      headers: corsHeaders,
-      body: JSON.stringify({ error: err.message }),
-    };
+    console.error("Auth/Creation error:", err);
+    return { statusCode: err.message?.includes("Unauthorized") ? 401 : 500, headers: corsHeaders, body: JSON.stringify({ error: err.message }) };
   }
 };
 
-// Get all comments
+// ✅ Get all comments
 export const getComments = async (event) => {
   const optionsResponse = handleOptions(event);
   if (optionsResponse) return optionsResponse;
 
   try {
-    const result = await dynamo.scan({ TableName: COMMENT_TABLE }).promise();
-    return {
-      statusCode: 200,
-      headers: corsHeaders,
-      body: JSON.stringify(result.Items),
-    };
+    const limit = Number(event.queryStringParameters?.limit) || 20;
+    const lastKey = event.queryStringParameters?.lastKey
+      ? JSON.parse(decodeURIComponent(event.queryStringParameters.lastKey))
+      : undefined;
+
+    const result = await dynamo.scan({
+      TableName: COMMENT_TABLE,
+      Limit: limit,
+      ExclusiveStartKey: lastKey,
+    }).promise();
+
+    return { statusCode: 200, headers: corsHeaders, body: JSON.stringify({ items: result.Items, lastKey: result.LastEvaluatedKey }) };
   } catch (err) {
     console.error("Error fetching comments:", err);
-    return {
-      statusCode: 500,
-      headers: corsHeaders,
-      body: JSON.stringify({ error: "Failed to fetch comments" }),
-    };
+    return { statusCode: 500, headers: corsHeaders, body: JSON.stringify({ error: "Failed to fetch comments" }) };
   }
 };
 
-// Get comments by logged-in user
+// ✅ Get comments by logged-in user
 export const getUserComments = async (event) => {
   const optionsResponse = handleOptions(event);
   if (optionsResponse) return optionsResponse;
 
   try {
-    const userId = requireAuth(event); // logged-in user
-    const params = {
+    const userId = requireAuth(event);
+    const result = await dynamo.query({
       TableName: COMMENT_TABLE,
       IndexName: "userCommentsIndex",
       KeyConditionExpression: "userId = :uid",
       ExpressionAttributeValues: { ":uid": userId },
-    };
+    }).promise();
 
-    const result = await dynamo.query(params).promise();
-
-    return {
-      statusCode: 200,
-      headers: corsHeaders,
-      body: JSON.stringify(result.Items),
-    };
+    return { statusCode: 200, headers: corsHeaders, body: JSON.stringify(result.Items) };
   } catch (err) {
     console.error("Error fetching user comments:", err);
-    return {
-      statusCode: 401,
-      headers: corsHeaders,
-      body: JSON.stringify({ error: err.message }),
-    };
+    return { statusCode: err.message?.includes("Unauthorized") ? 401 : 500, headers: corsHeaders, body: JSON.stringify({ error: err.message }) };
   }
 };
 
-// Get comments for a specific post
+// ✅ Get comments for a specific post
 export const getPostComments = async (event) => {
   const optionsResponse = handleOptions(event);
   if (optionsResponse) return optionsResponse;
@@ -127,33 +115,82 @@ export const getPostComments = async (event) => {
   try {
     const postId = event.pathParameters?.postId;
     if (!postId) {
-      return {
-        statusCode: 400,
-        headers: corsHeaders,
-        body: JSON.stringify({ error: "Missing postId" }),
-      };
+      return { statusCode: 400, headers: corsHeaders, body: JSON.stringify({ error: "Missing postId" }) };
     }
 
-    const params = {
+    const result = await dynamo.query({
       TableName: COMMENT_TABLE,
       IndexName: "postCommentsIndex",
       KeyConditionExpression: "postId = :pid",
       ExpressionAttributeValues: { ":pid": postId },
-    };
+    }).promise();
 
-    const result = await dynamo.query(params).promise();
-
-    return {
-      statusCode: 200,
-      headers: corsHeaders,
-      body: JSON.stringify(result.Items),
-    };
+    return { statusCode: 200, headers: corsHeaders, body: JSON.stringify(result.Items) };
   } catch (err) {
     console.error("Error fetching post comments:", err);
-    return {
-      statusCode: 500,
-      headers: corsHeaders,
-      body: JSON.stringify({ error: "Failed to fetch comments" }),
-    };
+    return { statusCode: 500, headers: corsHeaders, body: JSON.stringify({ error: "Failed to fetch comments" }) };
+  }
+};
+
+// ✅ Update a comment (owner only)
+export const updateComment = async (event) => {
+  const optionsResponse = handleOptions(event);
+  if (optionsResponse) return optionsResponse;
+
+  try {
+    const userId = requireAuth(event);
+    const { commentId, content } = JSON.parse(event.body ?? "{}");
+
+    if (!commentId || !content) {
+      return { statusCode: 400, headers: corsHeaders, body: JSON.stringify({ error: "Missing fields" }) };
+    }
+    if (content.length > 500) {
+      return { statusCode: 400, headers: corsHeaders, body: JSON.stringify({ error: "Comment too long" }) };
+    }
+
+    const result = await dynamo.update({
+      TableName: COMMENT_TABLE,
+      Key: { commentId },
+      ConditionExpression: "userId = :uid",
+      UpdateExpression: "SET content = :c, updatedAt = :u",
+      ExpressionAttributeValues: {
+        ":uid": userId,
+        ":c": content.trim(),
+        ":u": new Date().toISOString(),
+      },
+      ReturnValues: "ALL_NEW",
+    }).promise();
+
+    return { statusCode: 200, headers: corsHeaders, body: JSON.stringify(result.Attributes) };
+  } catch (err) {
+    console.error("Error updating comment:", err);
+    return { statusCode: err.code === "ConditionalCheckFailedException" ? 403 : 500, headers: corsHeaders, body: JSON.stringify({ error: err.message }) };
+  }
+};
+
+// ✅ Delete a comment (owner only)
+export const deleteComment = async (event) => {
+  const optionsResponse = handleOptions(event);
+  if (optionsResponse) return optionsResponse;
+
+  try {
+    const userId = requireAuth(event);
+    const { commentId } = JSON.parse(event.body ?? "{}");
+
+    if (!commentId) {
+      return { statusCode: 400, headers: corsHeaders, body: JSON.stringify({ error: "Missing commentId" }) };
+    }
+
+    await dynamo.delete({
+      TableName: COMMENT_TABLE,
+      Key: { commentId },
+      ConditionExpression: "userId = :uid",
+      ExpressionAttributeValues: { ":uid": userId },
+    }).promise();
+
+    return { statusCode: 200, headers: corsHeaders, body: JSON.stringify({ success: true }) };
+  } catch (err) {
+    console.error("Error deleting comment:", err);
+    return { statusCode: err.code === "ConditionalCheckFailedException" ? 403 : 500, headers: corsHeaders, body: JSON.stringify({ error: err.message }) };
   }
 };

@@ -35,24 +35,29 @@ function Home() {
   };
 
   const handleSignup = async (e) => {
-    e.preventDefault();
-    setError("");
-    setMessage("");
-    try {
-      await axios.post(
-        "https://g6ihp05rd9.execute-api.ca-central-1.amazonaws.com/auth/register",
-        { name: signupName, email: signupEmail, password: signupPassword }
-      );
-      setMessage("Signup successful! You can now login.");
-      setSignupName("");
-      setSignupEmail("");
-      setSignupPassword("");
-      setIsLogin(true);
-    // eslint-disable-next-line no-unused-vars
-    } catch (err) {
+  e.preventDefault();
+  setError("");
+  setMessage("");
+  try {
+    await axios.post(
+      "https://g6ihp05rd9.execute-api.ca-central-1.amazonaws.com/auth/register",
+      { name: signupName, email: signupEmail, password: signupPassword }
+    );
+
+    setMessage("Signup successful! You can now login.");
+    setSignupName("");
+    setSignupEmail("");
+    setSignupPassword("");
+    setIsLogin(true);
+
+  } catch (err) {
+    if (err.response?.status === 409) {
+      setError("Email already exists. Please login instead.");
+    } else {
       setError("Signup failed. Try again.");
     }
-  };
+  }
+};
 
   return (
     <div
