@@ -19,7 +19,7 @@ function PostDetails() {
   const [error, setError] = useState(null);
 
   const token = localStorage.getItem("token");
-  const API_BASE_URL = import.meta.env.API_BASE_URL
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
 
   useEffect(() => {
     if (!token) {

@@ -10,7 +10,7 @@ function UserPosts() {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
   const [error, setError] = useState(null);
-  const API_BASE_URL = import.meta.env.API_BASE_URL
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
 
   const navigate = useNavigate();
   const token = localStorage.getItem("token")?.replace(/"/g, "");

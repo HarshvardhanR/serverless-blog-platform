@@ -12,7 +12,7 @@ function PostModal({ post, onClose }) {
   const [commentText, setCommentText] = useState("");
   const [postingComment, setPostingComment] = useState(false);
 
-  const API_BASE_URL = import.meta.env.API_BASE_URL;
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
   const fetchComments = async () => {
     try {

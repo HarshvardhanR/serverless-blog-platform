@@ -18,7 +18,7 @@ function Dashboard() {
 
   const token = localStorage.getItem("token");
 
-  const API_BASE_URL = import.meta.env.API_BASE_URL;
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
   // Fetch user
   const fetchUser = async () => {
     try {
