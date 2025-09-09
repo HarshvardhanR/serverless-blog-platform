@@ -3,6 +3,9 @@ import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+// eslint-disable-next-line no-unused-vars
+import { motion } from "framer-motion";
+import { ArrowLeft, Send, MessageSquare } from "lucide-react";
 
 function PostDetails() {
   const { postId } = useParams();
@@ -73,85 +76,99 @@ function PostDetails() {
     }
   };
 
-  if (loading) return <p className="text-center mt-10">Loading...</p>;
+  if (loading) return <p className="text-center mt-10 animate-pulse">Loading...</p>;
   if (error) return <p className="text-center mt-10 text-red-500">{error}</p>;
   if (!post) return <p className="text-center mt-10">Post not found.</p>;
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6 max-w-3xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 p-6 max-w-3xl mx-auto">
       <button
         onClick={() => navigate("/dashboard")}
-        className="mb-4 px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300"
+        className="mb-4 flex items-center gap-2 px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition"
       >
-        &larr; Back
+        <ArrowLeft size={18} /> Back
       </button>
 
-      <div className="bg-white p-6 rounded-xl shadow-md mb-8">
-        <h1 className="text-2xl font-bold mb-2">{post.title}</h1>
+      {/* Post */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-white p-6 rounded-xl shadow-lg mb-8"
+      >
+        <h1 className="text-3xl font-bold mb-3">{post.title}</h1>
 
         {post.imageUrl && (
           <img
             src={post.imageUrl}
             alt="Post"
-            className="w-full max-h-96 object-cover mb-4 rounded-lg"
+            className="w-full max-h-96 object-cover mb-4 rounded-lg shadow"
           />
         )}
 
-        <div className="text-gray-700 mb-2 prose">
+        <div className="prose max-w-none text-gray-700 mb-4">
           <ReactMarkdown remarkPlugins={[remarkGfm]}>
             {post.content}
           </ReactMarkdown>
         </div>
 
-        <p className="text-gray-400 text-sm mt-2">
-          Posted at: {new Date(post.createdAt).toLocaleString()}
+        <p className="text-gray-400 text-sm">
+          Posted at {new Date(post.createdAt).toLocaleString()}
         </p>
-      </div>
+      </motion.div>
 
-      <div className="bg-white p-6 rounded-xl shadow-md">
-        <h2 className="text-xl font-semibold mb-4">Comments</h2>
+      {/* Comments */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="bg-white p-6 rounded-xl shadow-lg"
+      >
+        <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+          <MessageSquare size={20} /> Comments
+        </h2>
 
+        {/* Comment form */}
         <form onSubmit={handleCommentSubmit} className="mb-6">
           <textarea
             placeholder="Write your comment in Markdown..."
             value={commentText}
             onChange={(e) => setCommentText(e.target.value)}
-            className="w-full p-2 border rounded-lg mb-2 min-h-[80px]"
+            className="w-full p-3 border rounded-lg mb-3 focus:ring-2 focus:ring-blue-400 min-h-[90px]"
             rows={3}
             required
           />
           <button
             type="submit"
             disabled={postingComment}
-            className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
+            className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition"
           >
-            {postingComment ? "Posting..." : "Post Comment"}
+            {postingComment ? "Posting..." : <> <Send size={16} /> Post Comment </>}
           </button>
         </form>
 
+        {/* Comment list */}
         {comments.length === 0 ? (
-  <p className="text-gray-500">No comments yet.</p>
-) : (
-  <div className="space-y-4">
-    {comments.map((c) => (
-      <div
-        key={c.commentId}
-        className="bg-gray-100 p-3 rounded-lg shadow-sm prose max-w-full"
-      >
-        
-        <ReactMarkdown remarkPlugins={[remarkGfm]}>
-          {c.content}
-        </ReactMarkdown>
-
-        <p className="text-gray-500 text-xs mt-1">
-          By {c.name} at {new Date(c.createdAt).toLocaleString()}
-        </p>
-      </div>
-    ))}
-  </div>
-)}
-
-      </div>
+          <p className="text-gray-500 italic">No comments yet. Be the first!</p>
+        ) : (
+          <div className="space-y-4">
+            {comments.map((c) => (
+              <motion.div
+                key={c.commentId}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-gray-50 p-4 rounded-lg shadow-sm border"
+              >
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  {c.content}
+                </ReactMarkdown>
+                <p className="text-gray-500 text-xs mt-2">
+                  By <span className="font-medium">{c.name}</span> •{" "}
+                  {new Date(c.createdAt).toLocaleString()}
+                </p>
+              </motion.div>
+            ))}
+          </div>
+        )}
+      </motion.div>
     </div>
   );
 }

@@ -10,16 +10,16 @@ function Profile() {
 
   const token = localStorage.getItem("token");
 
-  
+  // Fetch user profile
   const fetchUser = async () => {
     try {
       const res = await axios.get(
         "https://g6ihp05rd9.execute-api.ca-central-1.amazonaws.com/auth/me",
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setUser(res.data); 
+      setUser(res.data);
     } catch (err) {
-      console.error("Error fetching profile:", err);
+      console.error("❌ Error fetching profile:", err);
     } finally {
       setLoading(false);
     }
@@ -29,7 +29,7 @@ function Profile() {
     if (token) fetchUser();
   }, [token]);
 
-
+  // Upload new profile image
   const handleImageChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -38,35 +38,34 @@ function Profile() {
     try {
       const ext = file.name.split(".").pop();
 
-      
+      // 1. Request signed upload URL from backend
       const { data: uploadData } = await axios.get(
         "https://g6ihp05rd9.execute-api.ca-central-1.amazonaws.com/auth/profile/upload-url",
         { headers: { Authorization: `Bearer ${token}` }, params: { ext } }
       );
 
-      
+      // 2. Upload file to S3 directly
       await axios.put(uploadData.uploadUrl, file, {
         headers: { "Content-Type": file.type },
       });
 
-      
+      // 3. Update user profile with new image key
       await axios.put(
         "https://g6ihp05rd9.execute-api.ca-central-1.amazonaws.com/auth/me",
         { profileImage: uploadData.key },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      
       await fetchUser();
     } catch (err) {
-      console.error("Error uploading profile image:", err);
+      console.error("❌ Error uploading profile image:", err);
       alert("Failed to upload profile image.");
     } finally {
       setUploading(false);
     }
   };
 
-  // Handle name change
+  // Update user name
   const handleNameChange = async () => {
     if (!newName.trim()) return;
     try {
@@ -79,11 +78,13 @@ function Profile() {
       setNewName("");
       await fetchUser();
     } catch (err) {
-      console.error("Error updating name:", err);
+      console.error("❌ Error updating name:", err);
     }
   };
 
-  if (loading) return <p className="p-6">Loading profile...</p>;
+  if (loading) {
+    return <p className="p-6 text-gray-600">Loading profile...</p>;
+  }
 
   const getInitial = (name) => name?.charAt(0).toUpperCase() || "?";
 
@@ -93,20 +94,20 @@ function Profile() {
 
       <div className="bg-white p-6 rounded-xl shadow-md mb-8 flex flex-col items-center space-y-4">
         {/* Profile Avatar */}
-        {user.profileImage ? (
+        {user?.profileImage ? (
           <img
-            src={user.profileImage} 
+            src={user.profileImage}
             alt="Profile"
             className="w-32 h-32 rounded-full object-cover border-2 border-gray-300"
           />
         ) : (
           <div className="w-32 h-32 rounded-full bg-blue-500 flex items-center justify-center text-white text-4xl font-bold">
-            {getInitial(user.name)}
+            {getInitial(user?.name)}
           </div>
         )}
 
-      
-        <label className="mt-2 px-4 py-2 bg-green-500 text-white rounded-lg cursor-pointer hover:bg-green-600">
+        {/* Upload Button */}
+        <label className="mt-2 px-4 py-2 bg-green-500 text-white rounded-lg cursor-pointer hover:bg-green-600 transition">
           {uploading ? "Uploading..." : "Add / Change Profile Picture"}
           <input
             type="file"
@@ -117,7 +118,7 @@ function Profile() {
           />
         </label>
 
-        
+        {/* Name + Email */}
         <div className="flex flex-col items-center space-y-2">
           {editingName ? (
             <div className="flex space-x-2">
@@ -126,6 +127,7 @@ function Profile() {
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
                 className="border px-2 py-1 rounded"
+                placeholder="Enter new name"
               />
               <button
                 onClick={handleNameChange}
@@ -134,7 +136,10 @@ function Profile() {
                 Save
               </button>
               <button
-                onClick={() => { setEditingName(false); setNewName(""); }}
+                onClick={() => {
+                  setEditingName(false);
+                  setNewName("");
+                }}
                 className="px-3 py-1 bg-gray-300 rounded hover:bg-gray-400"
               >
                 Cancel
@@ -142,7 +147,9 @@ function Profile() {
             </div>
           ) : (
             <div className="flex items-center space-x-2">
-              <p><strong>Name:</strong> {user.name}</p>
+              <p>
+                <strong>Name:</strong> {user?.name}
+              </p>
               <button
                 onClick={() => setEditingName(true)}
                 className="px-2 py-1 bg-yellow-400 text-white rounded hover:bg-yellow-500"
@@ -151,7 +158,9 @@ function Profile() {
               </button>
             </div>
           )}
-          <p><strong>Email:</strong> {user.email}</p>
+          <p>
+            <strong>Email:</strong> {user?.email}
+          </p>
         </div>
       </div>
     </div>
