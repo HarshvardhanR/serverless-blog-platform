@@ -17,7 +17,7 @@ function PostModal({ post, onClose }) {
   const fetchComments = async () => {
     try {
       const res = await axios.get(
-        `${API_BASE_URL}/post/${post.postId}`,
+        `${API_BASE_URL}/comments/post/${post.postId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setComments(res.data);

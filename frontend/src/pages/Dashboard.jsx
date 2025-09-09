@@ -46,7 +46,7 @@ function Dashboard() {
       const postsWithCount = await Promise.all(
         res.data.map(async (post) => {
           const commentsRes = await axios.get(
-            `${API_BASE_URL}/post/${post.postId}`,
+            `${API_BASE_URL}/comments/post/${post.postId}`,
             { headers: { Authorization: `Bearer ${token}` } }
           );
           return { ...post, commentsCount: commentsRes.data.length };

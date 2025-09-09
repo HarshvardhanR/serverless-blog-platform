@@ -13,10 +13,17 @@ function PostForm({ onPostCreated }) {
   const [loading, setLoading] = useState(false);
 
   const token = localStorage.getItem("token");
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Validation
+    if (!title.trim() || !content.trim()) {
+      alert("Both title and content are required!");
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -84,6 +91,7 @@ function PostForm({ onPostCreated }) {
           value={content}
           onChange={(e) => setContent(e.target.value)}
           className="w-full md:w-1/2 p-4 border border-gray-300 rounded-xl min-h-[400px] focus:ring-2 focus:ring-blue-400 outline-none text-gray-700"
+          required
         />
 
         <div className="w-full md:w-1/2 p-4 border border-gray-300 rounded-xl bg-gray-50 overflow-auto min-h-[400px]">
@@ -91,7 +99,6 @@ function PostForm({ onPostCreated }) {
             <Eye className="w-5 h-5 text-gray-400" /> Live Preview:
           </p>
 
-          {/* Wrap ReactMarkdown in a container instead of using className */}
           <div className="prose max-w-full text-gray-700">
             <ReactMarkdown remarkPlugins={[remarkGfm]}>
               {content || "Nothing to preview yet..."}
@@ -100,7 +107,6 @@ function PostForm({ onPostCreated }) {
         </div>
       </div>
 
-      {/* Image upload */}
       <label className="flex items-center gap-2 mb-6 cursor-pointer bg-blue-100 text-blue-700 px-4 py-2 rounded-xl hover:bg-blue-200 transition">
         <UploadCloud className="w-5 h-5" />
         {imageFile ? imageFile.name : "Upload Image"}
