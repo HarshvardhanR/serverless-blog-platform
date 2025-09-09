@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 // eslint-disable-next-line no-unused-vars
 import { AnimatePresence, motion } from "framer-motion";
-import { User, LogOut, FileText } from "lucide-react"; // Lucide icons
+import { User, LogOut, FileText } from "lucide-react"; 
 
 function Header({ user, loadingUser }) {
   const navigate = useNavigate();

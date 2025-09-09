@@ -19,6 +19,7 @@ function PostDetails() {
   const [error, setError] = useState(null);
 
   const token = localStorage.getItem("token");
+  const API_BASE_URL = import.meta.env.API_BASE_URL
 
   useEffect(() => {
     if (!token) {
@@ -33,11 +34,11 @@ function PostDetails() {
 
         const [postRes, commentsRes] = await Promise.all([
           axios.get(
-            `https://g6ihp05rd9.execute-api.ca-central-1.amazonaws.com/posts/${postId}`,
+            `${API_BASE_URL}/posts/${postId}`,
             { headers: { Authorization: `Bearer ${token}` } }
           ),
           axios.get(
-            `https://g6ihp05rd9.execute-api.ca-central-1.amazonaws.com/comments/post/${postId}`,
+            `${API_BASE_URL}/comments/post/${postId}`,
             { headers: { Authorization: `Bearer ${token}` } }
           ),
         ]);
@@ -62,7 +63,7 @@ function PostDetails() {
 
     try {
       const res = await axios.post(
-        "https://g6ihp05rd9.execute-api.ca-central-1.amazonaws.com/comments",
+        `${API_BASE_URL}/comments`,
         { postId, content: commentText },
         { headers: { Authorization: `Bearer ${token}` } }
       );

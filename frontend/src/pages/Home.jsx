@@ -17,13 +17,15 @@ function Home() {
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
 
+  const API_BASE_URL = import.meta.env.API_BASE_URL
+
   const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
     setMessage("");
     try {
       const res = await axios.post(
-        "https://g6ihp05rd9.execute-api.ca-central-1.amazonaws.com/auth/login",
+        `${API_BASE_URL}/auth/login`,
         { email: loginEmail, password: loginPassword }
       );
       localStorage.setItem("token", res.data.token);
@@ -41,7 +43,7 @@ function Home() {
     setMessage("");
     try {
       await axios.post(
-        "https://g6ihp05rd9.execute-api.ca-central-1.amazonaws.com/auth/register",
+        `${API_BASE_URL}/auth/register`,
         { name: signupName, email: signupEmail, password: signupPassword }
       );
 

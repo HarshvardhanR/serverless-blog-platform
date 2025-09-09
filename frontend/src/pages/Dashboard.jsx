@@ -18,11 +18,12 @@ function Dashboard() {
 
   const token = localStorage.getItem("token");
 
+  const API_BASE_URL = import.meta.env.API_BASE_URL;
   // Fetch user
   const fetchUser = async () => {
     try {
       const res = await axios.get(
-        "https://g6ihp05rd9.execute-api.ca-central-1.amazonaws.com/auth/me",
+        `${API_BASE_URL}/auth/me`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setUser(res.data);
@@ -38,14 +39,14 @@ function Dashboard() {
   const fetchPosts = async () => {
     try {
       const res = await axios.get(
-        "https://g6ihp05rd9.execute-api.ca-central-1.amazonaws.com/posts",
+        `${API_BASE_URL}/posts`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       // Add commentsCount
       const postsWithCount = await Promise.all(
         res.data.map(async (post) => {
           const commentsRes = await axios.get(
-            `https://g6ihp05rd9.execute-api.ca-central-1.amazonaws.com/comments/post/${post.postId}`,
+            `${API_BASE_URL}/post/${post.postId}`,
             { headers: { Authorization: `Bearer ${token}` } }
           );
           return { ...post, commentsCount: commentsRes.data.length };

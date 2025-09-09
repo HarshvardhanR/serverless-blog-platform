@@ -8,6 +8,7 @@ function CommentSection({ postId, comments, setComments }) {
   useState("");
   const [postingComment, setPostingComment] = useState(false);
   const token = localStorage.getItem("token");
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
 
   const handleCommentSubmit = async (e) => {
     e.preventDefault();
@@ -16,7 +17,7 @@ function CommentSection({ postId, comments, setComments }) {
     setPostingComment(true);
     try {
       const res = await axios.post(
-        "https://g6ihp05rd9.execute-api.ca-central-1.amazonaws.com/comments",
+        `${API_BASE_URL}/comments`,
         { postId, content: commentText },
         { headers: { Authorization: `Bearer ${token}` } }
       );

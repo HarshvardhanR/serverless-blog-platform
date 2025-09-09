@@ -7,6 +7,7 @@ function Profile() {
   const [uploading, setUploading] = useState(false);
   const [editingName, setEditingName] = useState(false);
   const [newName, setNewName] = useState("");
+  const API_BASE_URL = import.meta.env.API_BASE_URL
 
   const token = localStorage.getItem("token");
 
@@ -14,7 +15,7 @@ function Profile() {
   const fetchUser = async () => {
     try {
       const res = await axios.get(
-        "https://g6ihp05rd9.execute-api.ca-central-1.amazonaws.com/auth/me",
+        `${API_BASE_URL}/auth/me`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setUser(res.data);
@@ -40,7 +41,7 @@ function Profile() {
 
       // 1. Request signed upload URL from backend
       const { data: uploadData } = await axios.get(
-        "https://g6ihp05rd9.execute-api.ca-central-1.amazonaws.com/auth/profile/upload-url",
+        `${API_BASE_URL}/auth/profile/upload-url`,
         { headers: { Authorization: `Bearer ${token}` }, params: { ext } }
       );
 
@@ -51,7 +52,7 @@ function Profile() {
 
       // 3. Update user profile with new image key
       await axios.put(
-        "https://g6ihp05rd9.execute-api.ca-central-1.amazonaws.com/auth/me",
+        `${API_BASE_URL}/auth/me`,
         { profileImage: uploadData.key },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -70,7 +71,7 @@ function Profile() {
     if (!newName.trim()) return;
     try {
       await axios.put(
-        "https://g6ihp05rd9.execute-api.ca-central-1.amazonaws.com/auth/me",
+        `${API_BASE_URL}/auth/me`,
         { name: newName },
         { headers: { Authorization: `Bearer ${token}` } }
       );

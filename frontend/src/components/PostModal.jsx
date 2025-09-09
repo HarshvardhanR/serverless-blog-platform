@@ -12,10 +12,12 @@ function PostModal({ post, onClose }) {
   const [commentText, setCommentText] = useState("");
   const [postingComment, setPostingComment] = useState(false);
 
+  const API_BASE_URL = import.meta.env.API_BASE_URL;
+
   const fetchComments = async () => {
     try {
       const res = await axios.get(
-        `https://g6ihp05rd9.execute-api.ca-central-1.amazonaws.com/comments/post/${post.postId}`,
+        `${API_BASE_URL}/post/${post.postId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setComments(res.data);

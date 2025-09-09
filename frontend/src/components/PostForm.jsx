@@ -13,6 +13,7 @@ function PostForm({ onPostCreated }) {
   const [loading, setLoading] = useState(false);
 
   const token = localStorage.getItem("token");
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -23,7 +24,7 @@ function PostForm({ onPostCreated }) {
 
       if (imageFile) {
         const uploadRes = await axios.post(
-          "https://g6ihp05rd9.execute-api.ca-central-1.amazonaws.com/posts/upload-url",
+          `${API_BASE_URL}/posts/upload-url`,
           { fileName: imageFile.name, fileType: imageFile.type },
           { headers: { Authorization: `Bearer ${token}` } }
         );
@@ -38,7 +39,7 @@ function PostForm({ onPostCreated }) {
       }
 
       const postRes = await axios.post(
-        "https://g6ihp05rd9.execute-api.ca-central-1.amazonaws.com/posts",
+        `${API_BASE_URL}/posts`,
         { title, content, imageUrl },
         { headers: { Authorization: `Bearer ${token}` } }
       );

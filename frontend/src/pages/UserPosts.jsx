@@ -10,6 +10,7 @@ function UserPosts() {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
   const [error, setError] = useState(null);
+  const API_BASE_URL = import.meta.env.API_BASE_URL
 
   const navigate = useNavigate();
   const token = localStorage.getItem("token")?.replace(/"/g, "");
@@ -18,7 +19,7 @@ function UserPosts() {
     if (!token) return setError("No token provided");
     try {
       const res = await axios.get(
-        "https://g6ihp05rd9.execute-api.ca-central-1.amazonaws.com/auth/me",
+        `${API_BASE_URL}/auth/me`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setUser(res.data);
@@ -33,7 +34,7 @@ function UserPosts() {
     setLoading(true);
     try {
       const res = await axios.get(
-        "https://g6ihp05rd9.execute-api.ca-central-1.amazonaws.com/posts/me",
+        `${API_BASE_URL}/posts/me`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -41,7 +42,7 @@ function UserPosts() {
       const postsWithCount = await Promise.all(
         res.data.map(async (post) => {
           const commentsRes = await axios.get(
-            `https://g6ihp05rd9.execute-api.ca-central-1.amazonaws.com/comments/post/${post.postId}`,
+            `${API_BASE_URL}/comments/post/${post.postId}`,
             { headers: { Authorization: `Bearer ${token}` } }
           );
           return { ...post, commentsCount: commentsRes.data.length };
