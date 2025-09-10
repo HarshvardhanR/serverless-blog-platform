@@ -16,10 +16,9 @@ function PostModal({ post, onClose }) {
 
   const fetchComments = async () => {
     try {
-      const res = await axios.get(
-        `${API_BASE_URL}/comments/post/${post.postId}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const res = await axios.get(`${API_BASE_URL}/comments/post/${post.postId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       setComments(res.data);
     } catch (err) {
       console.error(err);
@@ -33,12 +32,12 @@ function PostModal({ post, onClose }) {
 
   const handleCommentSubmit = async (e) => {
     e.preventDefault();
-    if (!commentText) return;
+    if (!commentText.trim()) return;
     setPostingComment(true);
 
     try {
       const res = await axios.post(
-        "https://g6ihp05rd9.execute-api.ca-central-1.amazonaws.com/comments",
+        `${API_BASE_URL}/comments`,
         { postId: post.postId, content: commentText },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -57,15 +56,14 @@ function PostModal({ post, onClose }) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-start p-6 overflow-auto z-50"
+        className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-start p-4 sm:p-6 overflow-auto z-50"
       >
         <motion.div
           initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.95, opacity: 0 }}
-          className="bg-white rounded-xl shadow-lg w-full max-w-3xl p-8 pt-12 relative overflow-hidden"
+          className="bg-white rounded-xl shadow-lg w-full max-w-3xl p-6 sm:p-8 pt-12 relative overflow-hidden"
         >
-          
           <button
             onClick={onClose}
             className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 z-10"
@@ -73,7 +71,6 @@ function PostModal({ post, onClose }) {
             <X size={24} />
           </button>
 
-          
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -83,22 +80,20 @@ function PostModal({ post, onClose }) {
               boxShadow: "0 15px 30px rgba(0,0,0,0.15)",
             }}
             transition={{ type: "spring", stiffness: 250, damping: 20 }}
-            className="bg-white p-6 rounded-xl shadow-lg mb-6"
+            className="bg-white p-4 sm:p-6 rounded-xl shadow-lg mb-6"
           >
-            <h2 className="text-3xl font-bold mb-3 text-gray-800">{post.title}</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold mb-3 text-gray-800">{post.title}</h2>
 
             {post.imageUrl && (
               <img
                 src={post.imageUrl}
                 alt={post.title}
-                className="w-full max-h-96 object-cover mb-4 rounded-lg shadow-lg"
+                className="w-full max-h-80 sm:max-h-96 object-cover mb-4 rounded-lg shadow-lg"
               />
             )}
 
-            <div className="prose max-w-none text-gray-700 mb-4">
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                {post.content}
-              </ReactMarkdown>
+            <div className="prose max-w-full text-gray-700 mb-4 break-words">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>{post.content}</ReactMarkdown>
             </div>
 
             <p className="text-gray-400 text-sm">
@@ -106,30 +101,28 @@ function PostModal({ post, onClose }) {
             </p>
           </motion.div>
 
-          
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="bg-white p-6 rounded-xl shadow-lg"
+            className="bg-white p-4 sm:p-6 rounded-xl shadow-lg"
           >
             <h3 className="text-xl font-semibold mb-4 flex items-center gap-2 text-gray-700">
               <MessageSquare size={20} /> Comments
             </h3>
 
-            
-            <form onSubmit={handleCommentSubmit} className="mb-6">
+            <form onSubmit={handleCommentSubmit} className="mb-4">
               <textarea
                 placeholder="Write your comment in Markdown..."
                 value={commentText}
                 onChange={(e) => setCommentText(e.target.value)}
-                className="w-full p-3 border rounded-lg mb-3 focus:ring-2 focus:ring-blue-400 min-h-[90px]"
+                className="w-full p-3 border rounded-lg mb-3 focus:ring-2 focus:ring-blue-400 min-h-[80px] sm:min-h-[90px] resize-none"
                 rows={3}
                 required
               />
               <button
                 type="submit"
                 disabled={postingComment}
-                className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition"
+                className="flex items-center justify-center gap-2 w-full sm:w-auto bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition"
               >
                 {postingComment ? (
                   "Posting..."
@@ -141,7 +134,6 @@ function PostModal({ post, onClose }) {
               </button>
             </form>
 
-            {/* Comment List */}
             {comments.length === 0 ? (
               <p className="text-gray-500 italic">No comments yet. Be the first!</p>
             ) : (
@@ -157,7 +149,7 @@ function PostModal({ post, onClose }) {
                       boxShadow: "0 8px 20px rgba(0,0,0,0.08)",
                     }}
                     transition={{ type: "spring", stiffness: 250, damping: 20 }}
-                    className="bg-gray-50 p-4 rounded-lg shadow-sm border"
+                    className="bg-gray-50 p-3 sm:p-4 rounded-lg shadow-sm border"
                   >
                     <ReactMarkdown remarkPlugins={[remarkGfm]}>{c.content}</ReactMarkdown>
                     <p className="text-gray-500 text-xs mt-2">

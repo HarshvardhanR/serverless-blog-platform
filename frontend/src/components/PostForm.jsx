@@ -18,7 +18,6 @@ function PostForm({ onPostCreated }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validation
     if (!title.trim() || !content.trim()) {
       alert("Both title and content are required!");
       return;
@@ -67,12 +66,12 @@ function PostForm({ onPostCreated }) {
   return (
     <motion.form
       onSubmit={handleSubmit}
-      className="bg-white p-8 rounded-3xl shadow-xl w-full max-w-5xl mx-auto overflow-hidden"
+      className="bg-white p-6 sm:p-8 rounded-3xl shadow-xl w-full max-w-5xl mx-auto overflow-hidden"
       initial={{ opacity: 0, y: 50 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
-      <h2 className="text-2xl font-bold mb-6 text-gray-800 flex items-center gap-2">
+      <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-gray-800 flex items-center gap-2 justify-center sm:justify-start">
         <Eye className="w-6 h-6 text-blue-600" /> Create a Post
       </h2>
 
@@ -85,21 +84,21 @@ function PostForm({ onPostCreated }) {
         required
       />
 
-      <div className="flex flex-col md:flex-row gap-6 mb-6">
+      <div className="flex flex-col md:flex-row gap-4 md:gap-6 mb-6">
         <textarea
           placeholder="Write your content in Markdown..."
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          className="w-full md:w-1/2 p-4 border border-gray-300 rounded-xl min-h-[400px] focus:ring-2 focus:ring-blue-400 outline-none text-gray-700"
+          className="w-full md:w-1/2 p-4 border border-gray-300 rounded-xl min-h-[300px] md:min-h-[400px] focus:ring-2 focus:ring-blue-400 outline-none text-gray-700 resize-none"
           required
         />
 
-        <div className="w-full md:w-1/2 p-4 border border-gray-300 rounded-xl bg-gray-50 overflow-auto min-h-[400px]">
+        <div className="w-full md:w-1/2 p-4 border border-gray-300 rounded-xl bg-gray-50 overflow-auto min-h-[300px] md:min-h-[400px]">
           <p className="text-gray-500 mb-2 font-semibold flex items-center gap-2">
             <Eye className="w-5 h-5 text-gray-400" /> Live Preview:
           </p>
 
-          <div className="prose max-w-full text-gray-700">
+          <div className="prose max-w-full text-gray-700 break-words">
             <ReactMarkdown remarkPlugins={[remarkGfm]}>
               {content || "Nothing to preview yet..."}
             </ReactMarkdown>
@@ -107,7 +106,7 @@ function PostForm({ onPostCreated }) {
         </div>
       </div>
 
-      <label className="flex items-center gap-2 mb-6 cursor-pointer bg-blue-100 text-blue-700 px-4 py-2 rounded-xl hover:bg-blue-200 transition">
+      <label className="flex items-center gap-2 mb-6 cursor-pointer bg-blue-100 text-blue-700 px-4 py-2 rounded-xl hover:bg-blue-200 transition w-full md:w-auto justify-center">
         <UploadCloud className="w-5 h-5" />
         {imageFile ? imageFile.name : "Upload Image"}
         <input
