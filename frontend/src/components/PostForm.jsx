@@ -98,11 +98,12 @@ function PostForm({ onPostCreated }) {
             <Eye className="w-5 h-5 text-gray-400" /> Live Preview:
           </p>
 
-          <div className="prose max-w-full text-gray-700 break-words">
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>
-              {content || "Nothing to preview yet..."}
-            </ReactMarkdown>
-          </div>
+          <div className="prose max-w-full text-gray-700 break-words space-y-4">
+  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+    {content || "Nothing to preview yet..."}
+  </ReactMarkdown>
+</div>
+
         </div>
       </div>
 

@@ -122,11 +122,12 @@ function PostDetails() {
           />
         )}
 
-        <div className="prose max-w-full text-gray-700 mb-4 break-words">
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>
-            {post.content}
-          </ReactMarkdown>
-        </div>
+        <div className="prose max-w-full text-gray-700 mb-4 break-words space-y-4">
+  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+    {post.content}
+  </ReactMarkdown>
+</div>
+
 
         <p className="text-gray-400 text-sm">
           Posted at {new Date(post.createdAt).toLocaleString()}

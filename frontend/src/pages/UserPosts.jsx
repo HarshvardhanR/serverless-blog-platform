@@ -4,6 +4,8 @@ import axios from "axios";
 // eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
 import { MessageCircle } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 function UserPosts() {
   const [posts, setPosts] = useState([]);
@@ -110,9 +112,12 @@ function UserPosts() {
               <h3 className="font-semibold text-gray-800 text-lg mb-2">
                 {post.title}
               </h3>
-              <p className="text-gray-600 mb-3 line-clamp-2">
-                {post.content}
-              </p>
+              <div className="text-gray-600 mb-3 line-clamp-2 break-words">
+  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+    {post.content}
+  </ReactMarkdown>
+</div>
+
 
               <div className="flex justify-between items-center mt-2 text-gray-400 text-sm">
                 <div className="flex items-center gap-1">
