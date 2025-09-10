@@ -5,6 +5,7 @@ Users can create posts with optional images, view posts, and comment on them.
 The platform uses JWT-based authentication and supports image uploads via signed URLs.
 
 ---
+*Here is a link to [Live Preview](https://serverless-blog-platform-sami.vercel.app/) for reference.*
 
 ## Features
 
@@ -105,7 +106,7 @@ npm install
 2. Create `.env` file and add API URL:
 
 ```env
-REACT_APP_API_URL=https://your-api-gateway-url
+VITE_API_BASE_URL=https://your-api-gateway-url
 ```
 
 3. Start the development server:
