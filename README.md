@@ -5,6 +5,7 @@ Users can create posts with optional images, view posts, and comment on them.
 The platform uses JWT-based authentication and supports image uploads via signed URLs.
 
 ---
+*Here is a link to [Live Preview](https://serverless-blog-platform-sami.vercel.app/) for reference.*
 
 ## Features
 
