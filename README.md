@@ -105,7 +105,7 @@ npm install
 2. Create `.env` file and add API URL:
 
 ```env
-REACT_APP_API_URL=https://your-api-gateway-url
+VITE_API_BASE_URL=https://your-api-gateway-url
 ```
 
 3. Start the development server:
