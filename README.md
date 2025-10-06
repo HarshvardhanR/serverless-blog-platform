@@ -1,3 +1,7 @@
+The **Serverless Blog Platform** is a fully cloud-native application that enables users to create, publish, and manage blog posts without relying on traditional backend servers. Built using **AWS Lambda**, **API Gateway**, **S3**, and **DynamoDB**, it leverages serverless architecture to achieve automatic scaling, high availability, and cost efficiency. Blog data and metadata are stored in DynamoDB, while images and static assets are hosted on S3, ensuring fast and reliable content delivery. The backend logic is entirely handled through Lambda functions exposed via API Gateway, eliminating the need for dedicated servers. This architecture makes the platform lightweight, secure, and ideal for modern, scalable web applications.
+
+
+
 # Serverless Blog Platform
 
 A **Serverless Blog Platform** built with **React**, **AWS Lambda**, **DynamoDB**, and **S3**.
